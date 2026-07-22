@@ -1,7 +1,7 @@
 import {capitalizeFirst, escapeHtml, formatDistance, formatDuration, formatTimeRange} from "./utils.js";
 import {localize} from "./localize/localize.js";
 
-export function renderTimeline(segments, locale, config) {
+export function renderTimeline(segments, locale, config, selectedSegmentIndex = null) {
     if (!segments || segments.length === 0) {
         return `<div class="empty">${localize("timeline.empty")}</div>`;
     }
@@ -27,6 +27,7 @@ export function renderTimeline(segments, locale, config) {
                   hideMoving: Boolean(config.hide_moving),
                   hideStartTime: index === 0 && segment.type === "stay",
                   hideEndTime: index === segments.length - 1 && segment.type === "stay",
+                  selected: index === selectedSegmentIndex,
               }),
           )
           .join("")}
@@ -37,7 +38,7 @@ export function renderTimeline(segments, locale, config) {
 function renderSegment(segment, index, options) {
     if (segment.type === "stay") {
         return `
-          <div class="entry stay" data-segment-index="${index}" data-segment-type="stay">
+          <div class="entry stay${options.selected ? " selected" : ""}" data-segment-index="${index}" data-segment-type="stay" aria-selected="${options.selected ? "true" : "false"}">
             <div class="left-icon">
               <div class="icon-ring">
                 <ha-icon class="stay-icon" icon="${segment.zoneIcon || "mdi:map-marker"}"></ha-icon>
@@ -59,7 +60,7 @@ function renderSegment(segment, index, options) {
 
     if (!options.hideMoving) {
         return `
-          <div class="entry move" data-segment-index="${index}" data-segment-type="move">
+          <div class="entry move${options.selected ? " selected" : ""}" data-segment-index="${index}" data-segment-type="move" aria-selected="${options.selected ? "true" : "false"}">
             <div class="left-icon"></div>
             <div class="line-slot" data-segment-index="${index}">
               <div class="spine-overlay"></div>

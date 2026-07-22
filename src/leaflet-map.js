@@ -4,7 +4,7 @@ import {getTrackColor} from "./utils.js";
 const DEFAULT_ZOOM = 13;
 
 export class TimelineLeafletMap {
-    constructor(mapElement, homeZoneCenter = null) {
+    constructor(mapElement, homeZoneCenter = null, onViewportChange = null) {
         if (!mapElement?.isConnected) {
             throw new Error("Cannot setup Leaflet map on disconnected element");
         }
@@ -12,6 +12,8 @@ export class TimelineLeafletMap {
         this._Leaflet = Leaflet;
         this._mapElement = mapElement;
         this._homeZoneCenter = homeZoneCenter;
+        this._onViewportChange = typeof onViewportChange === "function" ? onViewportChange : null;
+        this._lastViewportSignature = null;
         this._leafletMap = Leaflet.map(mapElement, {zoomControl: true});
 
         const attribution =
@@ -34,9 +36,22 @@ export class TimelineLeafletMap {
         this._highlightedPath = [];
         this._highlightedStay = null;
         this._isTravelHighlightActive = false;
+        this._highlightedSegmentIndex = null;
+
+        this._resizeObserver =
+            typeof ResizeObserver === "function"
+                ? new ResizeObserver(() => {
+                      const changed = this.refreshViewport();
+                      if (changed) this._onViewportChange?.();
+                  })
+                : null;
+        this._resizeObserver?.observe(this._mapElement);
 
         this.setDarkMode(false);
-        requestAnimationFrame(() => this._leafletMap.invalidateSize());
+        requestAnimationFrame(() => {
+            this.refreshViewport();
+            this._onViewportChange?.();
+        });
     }
 
     setDarkMode(isDarkMode) {
@@ -44,6 +59,8 @@ export class TimelineLeafletMap {
     }
 
     destroy() {
+        this._resizeObserver?.disconnect();
+        this._resizeObserver = null;
         this._leafletMap.remove();
         this._mapLayers = [];
         this._fullDayPath = [];
@@ -51,9 +68,17 @@ export class TimelineLeafletMap {
         this._currentLocations = [];
         this._highlightedPath = [];
         this._highlightedStay = null;
+        this._highlightedSegmentIndex = null;
     }
 
-    setDaySegments(tracks = [], activeEntityIndex = 0, onTrackClick = null, colors = [], hideUnselected = false) {
+    setDaySegments(
+        tracks = [],
+        activeEntityIndex = 0,
+        onTrackClick = null,
+        onSegmentClick = null,
+        colors = [],
+        hideUnselected = false,
+    ) {
         this._fullDayPaths = tracks
             .map((track, index) => {
                 const points = [];
@@ -86,19 +111,22 @@ export class TimelineLeafletMap {
         this._fullDayPath = activeTrackPath || {points: []};
         this._activeTrackColor = activeTrackPath?.color || "var(--primary-color)";
         this._onTrackClick = typeof onTrackClick === "function" ? onTrackClick : null;
+        this._onSegmentClick = typeof onSegmentClick === "function" ? onSegmentClick : null;
 
         this._highlightedPath = [];
         this._highlightedStay = null;
         this._isTravelHighlightActive = false;
+        this._highlightedSegmentIndex = null;
 
         const activeSegments = tracks[activeEntityIndex]?.segments || [];
         this._drawMapSegments(activeSegments);
     }
 
-    highlightSegment(segment, segments) {
+    highlightSegment(segment, segments, segmentIndex = null) {
         this._highlightedPath = [];
         this._highlightedStay = null;
         this._isTravelHighlightActive = false;
+        this._highlightedSegmentIndex = Number.isInteger(segmentIndex) ? segmentIndex : null;
 
         if (segment?.type === "stay") {
             this._highlightedStay = segment;
@@ -126,11 +154,21 @@ export class TimelineLeafletMap {
         this._highlightedPath = [];
         this._highlightedStay = null;
         this._isTravelHighlightActive = false;
+        this._highlightedSegmentIndex = null;
 
         this._drawMapSegments(segments);
     }
 
-    fitMap(bounds = null) {
+    refreshViewport() {
+        if (!this._leafletMap || !this._mapElement?.isConnected) return false;
+        const signature = this._getViewportSignature();
+        const changed = signature !== this._lastViewportSignature;
+        this._lastViewportSignature = signature;
+        this._leafletMap.invalidateSize({pan: false, debounceMoveend: true});
+        return changed;
+    }
+
+    fitMap(bounds = null, options = {}) {
         if (bounds === null) {
             bounds = this._fullDayPath?.points?.map((point) => point.point) || [];
         }
@@ -142,8 +180,48 @@ export class TimelineLeafletMap {
             .map(normalizeLatLng)
             .filter((point) => point && Number.isFinite(point.lat) && Number.isFinite(point.lng));
         if (!normalizedBounds.length) return;
+        this.refreshViewport();
         const paddedBounds = this._Leaflet.latLngBounds(normalizedBounds).pad(0.1);
-        this._leafletMap.fitBounds(paddedBounds, {maxZoom: 14});
+        const viewportPadding = this._getVisibleViewportPadding();
+        this._leafletMap.fitBounds(paddedBounds, {
+            maxZoom: 14,
+            animate: options.animate ?? false,
+            paddingTopLeft: viewportPadding.paddingTopLeft,
+            paddingBottomRight: viewportPadding.paddingBottomRight,
+        });
+    }
+
+    _getViewportSignature() {
+        const rect = this._mapElement.getBoundingClientRect();
+        const padding = this._getVisibleViewportPadding(rect);
+        return [
+            Math.round(rect.width),
+            Math.round(rect.height),
+            padding.paddingTopLeft[0],
+            padding.paddingTopLeft[1],
+            padding.paddingBottomRight[0],
+            padding.paddingBottomRight[1],
+        ].join(":");
+    }
+
+    _getVisibleViewportPadding(rect = this._mapElement.getBoundingClientRect()) {
+        const viewport = window.visualViewport;
+        const viewportLeft = viewport?.offsetLeft ?? 0;
+        const viewportTop = viewport?.offsetTop ?? 0;
+        const viewportRight = viewportLeft + (viewport?.width ?? window.innerWidth);
+        const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+        const basePadding = 12;
+        const maxHorizontal = Math.max(0, Math.floor(rect.width / 2) - 24);
+        const maxVertical = Math.max(0, Math.floor(rect.height / 2) - 24);
+        const clippedLeft = Math.min(maxHorizontal, Math.max(0, Math.round(viewportLeft - rect.left)));
+        const clippedTop = Math.min(maxVertical, Math.max(0, Math.round(viewportTop - rect.top)));
+        const clippedRight = Math.min(maxHorizontal, Math.max(0, Math.round(rect.right - viewportRight)));
+        const clippedBottom = Math.min(maxVertical, Math.max(0, Math.round(rect.bottom - viewportBottom)));
+
+        return {
+            paddingTopLeft: [basePadding + clippedLeft, basePadding + clippedTop],
+            paddingBottomRight: [basePadding + clippedRight, basePadding + clippedBottom],
+        };
     }
 
     _drawMapSegments(segments) {
@@ -151,15 +229,18 @@ export class TimelineLeafletMap {
         this._mapLayers = [];
 
         this._drawMapLines();
+        this._drawMapSegmentHitAreas(segments);
         this._drawMapMarkers(segments);
         this._drawCurrentLocationMarkers();
         this._mapLayers.forEach((layer) => this._leafletMap.addLayer(layer));
     }
 
     _drawMapMarkers(segments) {
-        const stayMarkers = Array.isArray(segments) ? segments.filter((segment) => segment?.type === "stay") : [];
+        const stayMarkers = Array.isArray(segments)
+            ? segments.map((segment, index) => ({segment, index})).filter(({segment}) => segment?.type === "stay")
+            : [];
 
-        stayMarkers.forEach((stay) => {
+        stayMarkers.forEach(({segment: stay, index}) => {
             const iconName = stay.zoneIcon || "mdi:map-marker";
             const icon = createMarkerIcon({
                 iconName: iconName,
@@ -170,8 +251,9 @@ export class TimelineLeafletMap {
                 iconPadding: "2px",
                 leafletIconSize: [22, 22],
             });
-
-            this._mapLayers.push(this._Leaflet.marker(stay.center, {icon, zIndexOffset: 100}));
+            const marker = this._Leaflet.marker(stay.center, {icon, zIndexOffset: 100});
+            marker.on("click", () => this._onSegmentClick?.(index));
+            this._mapLayers.push(marker);
         });
 
         if (!this._highlightedStay) return;
@@ -185,13 +267,32 @@ export class TimelineLeafletMap {
             borderColor: "color-mix(in srgb, black 30%, var(--accent-color))",
             leafletIconSize: [26, 26],
         });
+        const marker = this._Leaflet.marker(this._highlightedStay.center, {
+            icon,
+            zIndexOffset: 1000,
+        });
+        marker.on("click", () => {
+            if (Number.isInteger(this._highlightedSegmentIndex)) {
+                this._onSegmentClick?.(this._highlightedSegmentIndex);
+            }
+        });
+        this._mapLayers.push(marker);
+    }
 
-        this._mapLayers.push(
-            this._Leaflet.marker(this._highlightedStay.center, {
-                icon,
-                zIndexOffset: 1000,
-            }),
-        );
+    _drawMapSegmentHitAreas(segments) {
+        if (!Array.isArray(segments) || !this._onSegmentClick) return;
+        segments.forEach((segment, index) => {
+            if (segment?.type !== "move" || !Array.isArray(segment.points) || segment.points.length < 2) return;
+            const latLngs = segment.points.map((point) => point.point);
+            const hitArea = this._Leaflet.polyline(latLngs, {
+                color: "#000000",
+                opacity: 0,
+                weight: 18,
+                interactive: true,
+            });
+            hitArea.on("click", () => this._onSegmentClick?.(index));
+            this._mapLayers.push(hitArea);
+        });
     }
 
     _drawMapLines() {

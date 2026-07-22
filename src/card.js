@@ -11,7 +11,6 @@ import {
     normalizeList,
     startOfDay,
     today,
-    toLatLon,
 } from "./utils.js";
 import {TimelineLeafletMap} from "./leaflet-map.js";
 import {clearPersistentCache, clearReverseGeocodingQueue} from "./reverse-geocoding.js";
@@ -52,8 +51,12 @@ class TimelineCard extends HTMLElement {
         this._rendered = false;
         this._touchStart = null;
         this._activeEntityIndex = 0;
+        this._selectedSegmentIndex = null;
         this._timelineCollapsed = false;
         this._updateIntervalId = null;
+        this._viewportAnimationFrame = null;
+        this._viewportListenersBound = false;
+        this._boundViewportChange = () => this._scheduleViewportSync();
         this._resetMapFitMode();
         this._addEventListeners();
     }
@@ -69,6 +72,7 @@ class TimelineCard extends HTMLElement {
         }
 
         this._activeEntityIndex = 0;
+        this._selectedSegmentIndex = null;
         this._timelineCollapsed = Boolean(this._config.collapse_timeline);
         this._selectedDate = startOfDay(new Date());
         this._resetMapFitMode();
@@ -110,10 +114,32 @@ class TimelineCard extends HTMLElement {
     }
 
     // noinspection JSUnusedGlobalSymbols
+    connectedCallback() {
+        if (this._viewportListenersBound) return;
+        this._viewportListenersBound = true;
+        window.addEventListener("scroll", this._boundViewportChange, {capture: true, passive: true});
+        window.addEventListener("resize", this._boundViewportChange, {passive: true});
+        window.visualViewport?.addEventListener("resize", this._boundViewportChange, {passive: true});
+        window.visualViewport?.addEventListener("scroll", this._boundViewportChange, {passive: true});
+        this._scheduleViewportSync(true);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
     disconnectedCallback() {
         if (this._updateIntervalId) {
             clearInterval(this._updateIntervalId);
             this._updateIntervalId = null;
+        }
+        if (this._viewportListenersBound) {
+            window.removeEventListener("scroll", this._boundViewportChange, true);
+            window.removeEventListener("resize", this._boundViewportChange);
+            window.visualViewport?.removeEventListener("resize", this._boundViewportChange);
+            window.visualViewport?.removeEventListener("scroll", this._boundViewportChange);
+            this._viewportListenersBound = false;
+        }
+        if (this._viewportAnimationFrame !== null) {
+            cancelAnimationFrame(this._viewportAnimationFrame);
+            this._viewportAnimationFrame = null;
         }
     }
 
@@ -160,6 +186,7 @@ class TimelineCard extends HTMLElement {
         const next = new Date(this._selectedDate);
         next.setDate(next.getDate() + direction);
         this._selectedDate = startOfDay(next);
+        this._selectedSegmentIndex = null;
         this._resetMapFitMode();
         this._ensureDay(this._selectedDate).then(() => this._render());
     }
@@ -173,6 +200,7 @@ class TimelineCard extends HTMLElement {
     }
 
     _refreshCurrentDay() {
+        this._selectedSegmentIndex = null;
         const key = formatDate(this._selectedDate);
         this._cache.delete(key);
         this._ensureDay(this._selectedDate).then(() => this._render());
@@ -238,6 +266,7 @@ class TimelineCard extends HTMLElement {
 
         const activeDayData = this._getCurrentTrackDayData(dayData);
         this.shadowRoot.getElementById("timeline-body").innerHTML = this._renderTimelineContent(activeDayData);
+        this._updateSelectedTimelineEntry(false);
 
         this._attachMapCard();
         this._rendered = true;
@@ -339,7 +368,9 @@ class TimelineCard extends HTMLElement {
 
         this._isLoadingMap = true;
         try {
-            this._mapView = new TimelineLeafletMap(container, this._getHomeZoneCenter());
+            this._mapView = new TimelineLeafletMap(container, this._getHomeZoneCenter(), () =>
+                this._scheduleViewportSync(true),
+            );
             this._setDarkMode();
             this._drawMapPaths();
         } catch (err) {
@@ -362,10 +393,12 @@ class TimelineCard extends HTMLElement {
                 tracks,
                 this._activeEntityIndex,
                 (entityIndex) => this._setActiveEntityIndex(entityIndex),
+                (segmentIndex) => this._selectSegment(segmentIndex, {fit: true, scrollIntoView: true}),
                 this._config.colors,
                 this._config.hide_unselected_on_map,
             );
             this._touchStart = null;
+            this._restoreSelectedSegmentHighlight();
 
             this._updateMapFitButton();
             this._fitMapToCurrentMode();
@@ -443,7 +476,7 @@ class TimelineCard extends HTMLElement {
         }
 
         try {
-            return renderTimeline(dayData.segments, this._hass?.locale, this._config);
+            return renderTimeline(dayData.segments, this._hass?.locale, this._config, this._selectedSegmentIndex);
         } catch (err) {
             const message = formatErrorMessage(err);
             console.warn("Timeline card: timeline render failed", err);
@@ -505,6 +538,8 @@ class TimelineCard extends HTMLElement {
             return;
         }
         this._activeEntityIndex = index;
+        this._selectedSegmentIndex = null;
+        this._resetMapFitMode();
         this._renderEntitySelector(true);
         this._render();
     }
@@ -518,15 +553,40 @@ class TimelineCard extends HTMLElement {
     }
 
     _fitMapToCurrentMode() {
+        if (!this._mapView) return;
         let bounds = null;
-        if (isToday(this._selectedDate) && this._mapFitMode === "current_location") {
+        if (this._mapFitMode === "segment") {
+            bounds = this._getSelectedSegmentBounds();
+            if (!bounds.length) {
+                this._selectedSegmentIndex = null;
+                this._mapFitMode = "selected_entity_path";
+            }
+        } else if (isToday(this._selectedDate) && this._mapFitMode === "current_location") {
             bounds = this._getCurrentEntityLocations().map((point) => point.point);
         }
-        this._mapView.fitMap(bounds);
+        this._mapView.fitMap(bounds, {animate: false});
+    }
+
+    _getSelectedSegmentBounds() {
+        if (!Number.isInteger(this._selectedSegmentIndex)) return [];
+        const track = this._getCurrentTrackDayData();
+        const segment = track?.segments?.[this._selectedSegmentIndex];
+        if (!segment) return [];
+        if (segment.type === "stay" && segment.center) return [segment.center];
+        if (segment.type === "move" && Array.isArray(segment.points)) {
+            return segment.points.map((point) => point.point);
+        }
+        return [];
     }
 
     _updateMapFitMode() {
-        if (this._mapFitMode === "current_location") {
+        if (this._mapFitMode === "segment") {
+            this._selectedSegmentIndex = null;
+            this._mapFitMode = "selected_entity_path";
+            this._updateSelectedTimelineEntry(false);
+            const track = this._getCurrentTrackDayData();
+            this._mapView?.clearHighlight(Array.isArray(track?.segments) ? track.segments : []);
+        } else if (this._mapFitMode === "current_location") {
             this._mapFitMode = "selected_entity_path";
         } else {
             this._resetMapFitMode();
@@ -607,6 +667,7 @@ class TimelineCard extends HTMLElement {
             const next = new Date(`${target.value}T00:00:00`);
             if (!Number.isNaN(next.getTime())) {
                 this._selectedDate = startOfDay(next);
+                this._selectedSegmentIndex = null;
                 this._resetMapFitMode();
                 this._ensureDay(this._selectedDate).then(() => this._render());
             }
@@ -641,38 +702,70 @@ class TimelineCard extends HTMLElement {
 
         const segments = Array.isArray(track.segments) ? track.segments : [];
         this._touchStart = null;
-        this._mapView.highlightSegment(segment, segments);
+        this._mapView.highlightSegment(segment, segments, segmentIndex);
     }
 
     _clearHoverHighlight() {
         if (!this._mapView) return;
-        const dayData = this._getCurrentDayData();
-        const track = this._getCurrentTrackDayData(dayData);
-        const segments = Array.isArray(track?.segments) ? track.segments : [];
         this._touchStart = null;
-        this._mapView.clearHighlight(segments);
+        this._restoreSelectedSegmentHighlight();
     }
 
     _handleSegmentClick(segmentIndex) {
-        if (!Number.isInteger(segmentIndex)) return;
-        const dayData = this._getCurrentDayData();
-        const track = this._getCurrentTrackDayData(dayData);
-        if (!track || !Array.isArray(track.segments)) return;
+        this._selectSegment(segmentIndex, {fit: true, scrollIntoView: false});
+    }
 
-        const segment = track.segments[segmentIndex];
+    _selectSegment(segmentIndex, {fit = true, scrollIntoView = false} = {}) {
+        if (!Number.isInteger(segmentIndex)) return;
+        const track = this._getCurrentTrackDayData();
+        const segments = Array.isArray(track?.segments) ? track.segments : [];
+        const segment = segments[segmentIndex];
         if (!segment) return;
 
+        this._selectedSegmentIndex = segmentIndex;
         this._mapFitMode = "segment";
         this._updateMapFitButton();
-        if (segment.type === "stay") {
-            this._mapView?.fitMap([segment.center]);
-        } else if (segment.type === "move") {
-            const segmentPoints = track.points.filter(
-                (point) => point.timestamp >= segment.start && point.timestamp <= segment.end,
-            );
-            if (segmentPoints.length < 2) return;
-            this._mapView?.fitMap(segmentPoints.map(toLatLon));
+        this._updateSelectedTimelineEntry(scrollIntoView);
+        this._mapView?.highlightSegment(segment, segments, segmentIndex);
+        if (fit) this._fitMapToCurrentMode();
+    }
+
+    _updateSelectedTimelineEntry(scrollIntoView = false) {
+        const entries = this.shadowRoot?.querySelectorAll(".entry[data-segment-index]") || [];
+        let selectedEntry = null;
+        entries.forEach((entry) => {
+            const selected = Number(entry.dataset.segmentIndex) === this._selectedSegmentIndex;
+            entry.classList.toggle("selected", selected);
+            entry.setAttribute("aria-selected", selected ? "true" : "false");
+            if (selected) selectedEntry = entry;
+        });
+        if (scrollIntoView && selectedEntry) {
+            selectedEntry.scrollIntoView({behavior: "smooth", block: "nearest", inline: "nearest"});
         }
+    }
+
+    _restoreSelectedSegmentHighlight() {
+        if (!this._mapView) return;
+        const track = this._getCurrentTrackDayData();
+        const segments = Array.isArray(track?.segments) ? track.segments : [];
+        const segment = Number.isInteger(this._selectedSegmentIndex) ? segments[this._selectedSegmentIndex] : null;
+        if (segment) {
+            this._mapView.highlightSegment(segment, segments, this._selectedSegmentIndex);
+        } else {
+            this._mapView.clearHighlight(segments);
+        }
+    }
+
+    _scheduleViewportSync(force = false) {
+        if (this._viewportAnimationFrame !== null) return;
+        this._viewportAnimationFrame = requestAnimationFrame(() => {
+            this._viewportAnimationFrame = null;
+            if (!this._mapView) return;
+            const changed = this._mapView.refreshViewport();
+            if (changed || force) {
+                this._fitMapToCurrentMode();
+            }
+        });
     }
 
     _bindTimelineTouch(body) {
@@ -710,11 +803,11 @@ class TimelineCard extends HTMLElement {
     }
 }
 
-customElements.define("location-timeline-card", TimelineCard);
+customElements.define("location-timeline-card-2gis", TimelineCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "location-timeline-card",
-    name: "Location Timeline Card",
+    type: "location-timeline-card-2gis",
+    name: "Location Timeline Card — 2GIS patch",
     description: localize("card.description"),
 });

@@ -218,7 +218,35 @@ ha-card {
   grid-template-columns: 50px 32px 1fr auto;
   align-items: center;
   column-gap: 12px;
-  padding: 12px 0;
+  padding: 12px 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.entry.selected {
+  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+  box-shadow: inset 4px 0 0 var(--accent-color);
+}
+
+.entry.selected .icon-ring {
+  border-color: var(--accent-color);
+  box-shadow:
+    0 0 0 4px var(--card-background-color, #fff),
+    0 0 0 6px color-mix(in srgb, var(--accent-color) 45%, transparent);
+}
+
+.entry.selected .line-dot {
+  background: var(--accent-color);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 24%, transparent);
+}
+
+.entry.selected.stay .title,
+.entry.selected.move .title {
+  color: var(--primary-text-color);
+  font-weight: 700;
 }
 
 .left-icon {
