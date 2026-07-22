@@ -29,12 +29,10 @@ ha-card {
 
 .date-wrap {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   flex: 1;
   min-width: 0;
-  gap: 1px;
 }
 
 .date-trigger {
@@ -65,11 +63,10 @@ ha-card {
 }
 
 .time-range-summary {
-  max-width: 100%;
   overflow: hidden;
   color: var(--secondary-text-color);
-  font-size: 0.72rem;
-  line-height: 1.1;
+  font-size: 0.82rem;
+  line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -87,24 +84,64 @@ ha-card {
   color: var(--primary-text-color);
 }
 
-.time-range-button {
-  position: relative;
+.time-range-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--divider-color);
+  background: color-mix(
+    in srgb,
+    var(--card-background-color, var(--ha-card-background, #fff)) 92%,
+    var(--primary-color)
+  );
+  color: var(--primary-text-color);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.time-range-button.active {
+.time-range-row > ha-icon:first-child {
+  color: var(--primary-color);
+  --mdc-icon-size: 23px;
+}
+
+.time-range-row-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.time-range-row-label {
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time-range-row-caret {
+  color: var(--secondary-text-color);
+  --mdc-icon-size: 20px;
+}
+
+.time-range-row.active {
+  box-shadow: inset 4px 0 0 var(--accent-color);
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 10%,
+    var(--card-background-color, var(--ha-card-background, #fff))
+  );
+}
+
+.time-range-row.active > ha-icon:first-child,
+.time-range-row.active .time-range-summary {
   color: var(--accent-color);
-}
-
-.time-range-button.active::after {
-  position: absolute;
-  right: 4px;
-  bottom: 4px;
-  width: 7px;
-  height: 7px;
-  border: 2px solid var(--card-background-color, var(--ha-card-background, #fff));
-  border-radius: 50%;
-  background: var(--accent-color);
-  content: "";
 }
 
 .header-actions {
@@ -548,4 +585,27 @@ ha-card {
 .leaflet-top,
 .leaflet-bottom {
   z-index: 1 !important;
+}
+
+@media (max-width: 480px) {
+  .header {
+    gap: 4px;
+    padding: 8px 6px;
+  }
+
+  .header-actions {
+    gap: 0;
+  }
+
+  .nav-button {
+    --mdc-icon-button-size: 34px;
+  }
+
+  .date {
+    font-size: 0.92rem;
+  }
+
+  .time-range-row {
+    padding: 9px 12px;
+  }
 }

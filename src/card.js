@@ -318,15 +318,21 @@ class TimelineCard extends HTMLElement {
                       <span id="timeline-date" class="date"></span>
                       <ha-icon class="date-caret" icon="mdi:menu-down"></ha-icon>
                     </button>
-                    <span id="time-range-summary" class="time-range-summary"></span>
                     <input id="timeline-date-picker" class="date-picker-input" type="date">
                   </div>
                   <div class="header-actions">
                     <ha-icon-button class="nav-button" data-action="refresh" label="${localize("card.labels.refresh")}"><ha-icon icon="mdi:refresh"></ha-icon></ha-icon-button>
                     <ha-icon-button class="nav-button" data-action="next" label="${localize("card.labels.next_day")}"><ha-icon icon="mdi:chevron-right"></ha-icon></ha-icon-button>
-                    <ha-icon-button id="time-range-button" class="nav-button time-range-button" data-action="open-time-range" label="${localize("card.labels.pick_time_range")}"><ha-icon icon="mdi:clock-time-four-outline"></ha-icon></ha-icon-button>
                   </div>
                 </div>
+                <button id="time-range-button" class="time-range-row" data-action="open-time-range" type="button">
+                  <ha-icon icon="mdi:clock-time-four-outline"></ha-icon>
+                  <span class="time-range-row-copy">
+                    <span class="time-range-row-label">${localize("card.labels.pick_time_range")}</span>
+                    <span id="time-range-summary" class="time-range-summary"></span>
+                  </span>
+                  <ha-icon class="time-range-row-caret" icon="mdi:menu-down"></ha-icon>
+                </button>
                 <div id="timeline-body" class="body"></div>
                 </div>
               </div>
@@ -951,11 +957,11 @@ class TimelineCard extends HTMLElement {
     }
 }
 
-customElements.define("location-timeline-card-2gis", TimelineCard);
+customElements.define("location-timeline-card-2gis-v2", TimelineCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "location-timeline-card-2gis",
-    name: "Location Timeline Card — 2GIS patch",
+    type: "location-timeline-card-2gis-v2",
+    name: "Location Timeline Card — 2GIS patch v2",
     description: localize("card.description"),
 });
