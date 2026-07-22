@@ -1,9 +1,16 @@
 import {capitalizeFirst, escapeHtml, formatDistance, formatDuration, formatTimeRange} from "./utils.js";
 import {localize} from "./localize/localize.js";
 
-export function renderTimeline(segments, locale, config, selectedSegmentIndex = null) {
+export function renderTimeline(
+    segments,
+    locale,
+    config,
+    selectedSegmentIndex = null,
+    hideDayBoundaryTimes = true,
+    timeRangeActive = false,
+) {
     if (!segments || segments.length === 0) {
-        return `<div class="empty">${localize("timeline.empty")}</div>`;
+        return `<div class="empty">${localize(timeRangeActive ? "timeline.empty_range" : "timeline.empty")}</div>`;
     }
 
     const entries = segments.map((segment, index) => ({segment, index}));
@@ -25,8 +32,8 @@ export function renderTimeline(segments, locale, config, selectedSegmentIndex = 
                   iconMap: config.activity_icon_map || {},
                   distanceUnit: config.distance_unit || "metric",
                   hideMoving: Boolean(config.hide_moving),
-                  hideStartTime: index === 0 && segment.type === "stay",
-                  hideEndTime: index === segments.length - 1 && segment.type === "stay",
+                  hideStartTime: hideDayBoundaryTimes && index === 0 && segment.type === "stay",
+                  hideEndTime: hideDayBoundaryTimes && index === segments.length - 1 && segment.type === "stay",
                   selected: index === selectedSegmentIndex,
               }),
           )

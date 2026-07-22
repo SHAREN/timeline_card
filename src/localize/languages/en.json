@@ -7,17 +7,29 @@
       "pick_date": "Pick date",
       "refresh": "Refresh",
       "next_day": "Next day",
-      "update_interval": "Update interval"
+      "update_interval": "Update interval",
+      "pick_time_range": "Choose time range"
     },
     "timeline": {
       "loading": "Loading timeline..."
     },
-    "description": "Daily location timeline from GPS history."
+    "description": "Daily location timeline from GPS history.",
+    "time_range": {
+      "title": "Time range",
+      "from": "From",
+      "to": "To",
+      "all_day": "All day",
+      "cancel": "Cancel",
+      "apply": "Apply",
+      "invalid": "Enter both start and end time.",
+      "end_after_start": "End time must be later than start time."
+    }
   },
   "timeline": {
     "empty": "No location history for this day.",
     "unknown_location": "Unknown location",
-    "moving": "Moving"
+    "moving": "Moving",
+    "empty_range": "No location history in the selected time range."
   },
   "utils": {
     "time": {

@@ -1,10 +1,10 @@
-var css = ":host {\n  display: block;\n  font-family: var(--ha-card-header-font-family, \"Helvetica Neue\", Arial, sans-serif);\n}\n\nha-card {\n  overflow: hidden;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n\n.header {\n  position: sticky;\n  top: 0;\n  z-index: 2;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  padding: 12px 16px;\n  background: var(--card-background-color, var(--ha-card-background, #fff));\n  border-bottom: 1px solid var(--divider-color);\n  flex-wrap: nowrap;\n}\n\n.date-wrap {\n  display: flex;\n  justify-content: center;\n  flex: 1;\n  min-width: 0;\n}\n\n.date-trigger {\n  display: inline-flex;\n  align-items: center;\n  border: 0;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n  padding: 2px 4px;\n  margin: 0;\n  min-width: 0;\n  cursor: pointer;\n}\n\n.date {\n  font-size: 1rem;\n  font-weight: 600;\n  text-align: center;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.date-caret {\n  color: var(--secondary-text-color);\n  --mdc-icon-size: 20px;\n}\n\n.date-picker-input {\n  position: absolute;\n  opacity: 0;\n  pointer-events: none;\n  width: 0;\n  height: 0;\n}\n\n.nav-button {\n  --mdc-icon-button-size: 36px;\n  color: var(--primary-text-color);\n}\n\n.header-actions {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n}\n\n.nav-button[disabled] {\n  opacity: 0.4;\n  cursor: default;\n}\n\n.entity-selector {\n  display: flex;\n  flex: 1;\n  justify-content: center;\n  flex-wrap: wrap;\n  gap: 8px;\n  padding: 10px 12px 6px 0;\n}\n\n.entity-selector[hidden] {\n  display: none;\n}\n\n.selector-row {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  padding: 0 8px;\n  border-bottom: 1px solid var(--divider-color);\n}\n\n.selector-collapse {\n  --mdc-icon-button-size: 34px;\n}\n\n.selector-row[hidden] {\n  display: none;\n}\n\n.timeline-section {\n  display: grid;\n  grid-template-rows: 1fr;\n  transition:\n    grid-template-rows 260ms ease,\n    opacity 260ms ease;\n  opacity: 1;\n}\n\n.timeline-content {\n  overflow: hidden;\n}\n\n.timeline-section.collapsed {\n  grid-template-rows: 0fr;\n  opacity: 0;\n}\n\n.entity-chip {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  border-radius: 999px;\n  border: 1px solid color-mix(in srgb, #ddd 60%, var(--entity-track-color));\n  color: var(--entity-track-color);\n  padding: 3px 10px 3px 3px;\n  cursor: pointer;\n  white-space: nowrap;\n  background: none;\n}\n\n.entity-chip.active {\n  padding-left: 4px;\n  background: #eee;\n}\n\n.entity-chip.active span {\n  font-weight: 700;\n}\n\n.entity-chip img {\n  width: 24px;\n  height: 24px;\n  border-radius: 50%;\n  object-fit: cover;\n}\n\n.entity-chip ha-icon {\n  --mdc-icon-size: 24px;\n  color: color-mix(in srgb, var(--entity-track-color, var(--secondary-text-color)) 70%, var(--secondary-text-color));\n}\n\n.entity-avatar-icon {\n  color: var(--entity-track-color, var(--secondary-text-color));\n}\n\n.body {\n  padding: 8px 16px 16px;\n  max-height: 420px;\n  overflow: auto;\n  touch-action: pan-y;\n}\n\n.loading,\n.error,\n.empty {\n  padding: 16px 0;\n  color: var(--secondary-text-color);\n  text-align: center;\n}\n\n.error {\n  color: var(--error-color, #c62828);\n}\n\n.timeline {\n  position: relative;\n  padding: 8px 0;\n}\n\n.spine {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 72px;\n  width: 12px;\n  background: var(--timeline-color, var(--primary-color));\n  border-radius: 999px;\n}\n\n.timeline.trim-spine-top .spine {\n  top: 32px;\n}\n\n.timeline.trim-spine-bottom .spine {\n  bottom: 32px;\n}\n\n.entry {\n  position: relative;\n  display: grid;\n  grid-template-columns: 50px 32px 1fr auto;\n  align-items: center;\n  column-gap: 12px;\n  padding: 12px 6px;\n  border-radius: 12px;\n  cursor: pointer;\n  transition:\n    background-color 160ms ease,\n    box-shadow 160ms ease;\n}\n\n.entry.selected {\n  background: color-mix(in srgb, var(--accent-color) 14%, transparent);\n  box-shadow: inset 4px 0 0 var(--accent-color);\n}\n\n.entry.selected .icon-ring {\n  border-color: var(--accent-color);\n  box-shadow:\n    0 0 0 4px var(--card-background-color, #fff),\n    0 0 0 6px color-mix(in srgb, var(--accent-color) 45%, transparent);\n}\n\n.entry.selected .line-dot {\n  background: var(--accent-color);\n  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 24%, transparent);\n}\n\n.entry.selected.stay .title,\n.entry.selected.move .title {\n  color: var(--primary-text-color);\n  font-weight: 700;\n}\n\n.left-icon {\n  display: flex;\n  justify-content: flex-end;\n  padding-right: 4px;\n}\n\n.icon-ring {\n  width: 32px;\n  height: 32px;\n  border-radius: 50%;\n  background: var(--card-background-color, #fff);\n  border: 3px solid var(--timeline-color, var(--primary-color));\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: 0 0 0 4px var(--card-background-color, #fff);\n}\n\n.line-slot {\n  position: relative;\n  width: 32px;\n  height: 32px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.line-dot {\n  width: 10px;\n  height: 10px;\n  border-radius: 50%;\n  background: color-mix(in srgb, white 45%, transparent);\n}\n\n.stay-icon {\n  color: var(--timeline-color, var(--primary-color));\n}\n\n.move-icon {\n  color: var(--secondary-text-color);\n}\n\n.content {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.content.location {\n  align-items: flex-start;\n}\n\n.content.location.travel {\n  flex-direction: row;\n  align-items: center;\n  gap: 6px;\n  color: var(--secondary-text-color);\n}\n\n.content.time {\n  justify-self: end;\n  text-align: right;\n}\n\n.content.time.multiline {\n  gap: 0;\n}\n\n.entry.move .title {\n  margin-left: 10px;\n  color: var(--secondary-text-color);\n}\n\n.entry.stay .title {\n  background-color: #0001;\n  padding: 3px 10px;\n  border-radius: 20px;\n}\n\n.title {\n  font-size: 0.95rem;\n  font-weight: 600;\n  color: var(--primary-text-color);\n}\n\n.meta {\n  font-size: 0.85rem;\n  color: var(--secondary-text-color);\n  font-weight: normal;\n}\n\n.meta.small {\n  font-size: 0.65rem;\n}\n\n.meta.duration {\n  color: color-mix(in srgb, var(--secondary-text-color) 60%, var(--primary-background-color));\n}\n\n.map-wrap {\n  position: relative;\n}\n\n#overview-map {\n  height: 200px;\n  --map-filter: invert(0);\n}\n\n#overview-map.dark {\n  background: #090909;\n  --map-filter: invert(0.9) hue-rotate(170deg) brightness(1.5) contrast(1.2) saturate(0.3);\n}\n\n.leaflet-tile-pane {\n  filter: var(--map-filter);\n}\n\n#overview-map.dark .leaflet-bar a {\n  background-color: #1c1c1c;\n  color: #ffffff;\n}\n\n#overview-map.dark .leaflet-bar a:hover {\n  background-color: #313131;\n}\n\n.map-reset {\n  position: absolute;\n  top: 8px;\n  right: 8px;\n  z-index: 1000;\n  --mdc-icon-button-size: 34px;\n  background: var(--card-background-color, #fff);\n  border-radius: 50%;\n  box-shadow: 0 2px 6px #0003;\n}\n\n.map-reset-left {\n  left: 8px;\n  right: auto;\n  top: auto;\n  bottom: 8px;\n}\n\n.map-reset[hidden] {\n  display: none;\n}\n\n#map-fit-mode[hidden] {\n  display: none;\n}\n\n.leaflet-pane {\n  z-index: 0 !important;\n}\n\n.leaflet-control,\n.leaflet-top,\n.leaflet-bottom {\n  z-index: 1 !important;\n}\n";
+var css = ":host {\n  display: block;\n  font-family: var(--ha-card-header-font-family, \"Helvetica Neue\", Arial, sans-serif);\n}\n\nha-card {\n  overflow: hidden;\n}\n\n.card {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n}\n\n.header {\n  position: sticky;\n  top: 0;\n  z-index: 2;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  padding: 12px 16px;\n  background: var(--card-background-color, var(--ha-card-background, #fff));\n  border-bottom: 1px solid var(--divider-color);\n  flex-wrap: nowrap;\n}\n\n.date-wrap {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  flex: 1;\n  min-width: 0;\n  gap: 1px;\n}\n\n.date-trigger {\n  display: inline-flex;\n  align-items: center;\n  border: 0;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n  padding: 2px 4px;\n  margin: 0;\n  min-width: 0;\n  cursor: pointer;\n}\n\n.date {\n  font-size: 1rem;\n  font-weight: 600;\n  text-align: center;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.date-caret {\n  color: var(--secondary-text-color);\n  --mdc-icon-size: 20px;\n}\n\n.time-range-summary {\n  max-width: 100%;\n  overflow: hidden;\n  color: var(--secondary-text-color);\n  font-size: 0.72rem;\n  line-height: 1.1;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.date-picker-input {\n  position: absolute;\n  opacity: 0;\n  pointer-events: none;\n  width: 0;\n  height: 0;\n}\n\n.nav-button {\n  --mdc-icon-button-size: 36px;\n  color: var(--primary-text-color);\n}\n\n.time-range-button {\n  position: relative;\n}\n\n.time-range-button.active {\n  color: var(--accent-color);\n}\n\n.time-range-button.active::after {\n  position: absolute;\n  right: 4px;\n  bottom: 4px;\n  width: 7px;\n  height: 7px;\n  border: 2px solid var(--card-background-color, var(--ha-card-background, #fff));\n  border-radius: 50%;\n  background: var(--accent-color);\n  content: \"\";\n}\n\n.header-actions {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n}\n\n.nav-button[disabled] {\n  opacity: 0.4;\n  cursor: default;\n}\n\n.time-range-dialog {\n  width: min(360px, calc(100vw - 32px));\n  max-width: 100%;\n  padding: 0;\n  border: 0;\n  border-radius: 20px;\n  background: var(--card-background-color, var(--ha-card-background, #fff));\n  color: var(--primary-text-color);\n  box-shadow: 0 18px 60px #0008;\n}\n\n.time-range-dialog::backdrop {\n  background: #0009;\n  backdrop-filter: blur(2px);\n}\n\n.time-range-form {\n  display: flex;\n  flex-direction: column;\n  gap: 18px;\n  padding: 22px;\n}\n\n.time-range-title {\n  font-size: 1.15rem;\n  font-weight: 700;\n}\n\n.time-range-fields {\n  display: grid;\n  grid-template-columns: 1fr auto 1fr;\n  align-items: end;\n  gap: 10px;\n}\n\n.time-range-fields label {\n  display: flex;\n  flex-direction: column;\n  gap: 7px;\n  color: var(--secondary-text-color);\n  font-size: 0.82rem;\n}\n\n.time-range-fields input[type=\"time\"] {\n  width: 100%;\n  box-sizing: border-box;\n  padding: 10px 8px;\n  border: 1px solid var(--divider-color);\n  border-radius: 10px;\n  outline: none;\n  background: var(--secondary-background-color, var(--card-background-color, #fff));\n  color: var(--primary-text-color);\n  font: inherit;\n  font-size: 1rem;\n}\n\n.time-range-fields input[type=\"time\"]:focus {\n  border-color: var(--accent-color);\n  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent);\n}\n\n.time-range-separator {\n  padding-bottom: 11px;\n  color: var(--secondary-text-color);\n}\n\n.time-range-error {\n  margin-top: -8px;\n  color: var(--error-color, #db4437);\n  font-size: 0.82rem;\n}\n\n.time-range-error[hidden] {\n  display: none;\n}\n\n.time-range-actions {\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  gap: 8px;\n  flex-wrap: wrap;\n}\n\n.time-range-actions button {\n  min-height: 38px;\n  padding: 0 13px;\n  border: 0;\n  border-radius: 10px;\n  background: transparent;\n  color: var(--primary-text-color);\n  font: inherit;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.time-range-actions .time-range-all-day {\n  margin-right: auto;\n  color: var(--accent-color);\n}\n\n.time-range-actions .time-range-apply {\n  background: var(--accent-color);\n  color: var(--text-primary-color, #fff);\n}\n\n.entity-selector {\n  display: flex;\n  flex: 1;\n  justify-content: center;\n  flex-wrap: wrap;\n  gap: 8px;\n  padding: 10px 12px 6px 0;\n}\n\n.entity-selector[hidden] {\n  display: none;\n}\n\n.selector-row {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  padding: 0 8px;\n  border-bottom: 1px solid var(--divider-color);\n}\n\n.selector-collapse {\n  --mdc-icon-button-size: 34px;\n}\n\n.selector-row[hidden] {\n  display: none;\n}\n\n.timeline-section {\n  display: grid;\n  grid-template-rows: 1fr;\n  transition:\n    grid-template-rows 260ms ease,\n    opacity 260ms ease;\n  opacity: 1;\n}\n\n.timeline-content {\n  overflow: hidden;\n}\n\n.timeline-section.collapsed {\n  grid-template-rows: 0fr;\n  opacity: 0;\n}\n\n.entity-chip {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  border-radius: 999px;\n  border: 1px solid color-mix(in srgb, #ddd 60%, var(--entity-track-color));\n  color: var(--entity-track-color);\n  padding: 3px 10px 3px 3px;\n  cursor: pointer;\n  white-space: nowrap;\n  background: none;\n}\n\n.entity-chip.active {\n  padding-left: 4px;\n  background: #eee;\n}\n\n.entity-chip.active span {\n  font-weight: 700;\n}\n\n.entity-chip img {\n  width: 24px;\n  height: 24px;\n  border-radius: 50%;\n  object-fit: cover;\n}\n\n.entity-chip ha-icon {\n  --mdc-icon-size: 24px;\n  color: color-mix(in srgb, var(--entity-track-color, var(--secondary-text-color)) 70%, var(--secondary-text-color));\n}\n\n.entity-avatar-icon {\n  color: var(--entity-track-color, var(--secondary-text-color));\n}\n\n.body {\n  padding: 8px 16px 16px;\n  max-height: 420px;\n  overflow: auto;\n  touch-action: pan-y;\n}\n\n.loading,\n.error,\n.empty {\n  padding: 16px 0;\n  color: var(--secondary-text-color);\n  text-align: center;\n}\n\n.error {\n  color: var(--error-color, #c62828);\n}\n\n.timeline {\n  position: relative;\n  padding: 8px 0;\n}\n\n.spine {\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 72px;\n  width: 12px;\n  background: var(--timeline-color, var(--primary-color));\n  border-radius: 999px;\n}\n\n.timeline.trim-spine-top .spine {\n  top: 32px;\n}\n\n.timeline.trim-spine-bottom .spine {\n  bottom: 32px;\n}\n\n.entry {\n  position: relative;\n  display: grid;\n  grid-template-columns: 50px 32px 1fr auto;\n  align-items: center;\n  column-gap: 12px;\n  padding: 12px 6px;\n  border-radius: 12px;\n  cursor: pointer;\n  transition:\n    background-color 160ms ease,\n    box-shadow 160ms ease;\n}\n\n.entry.selected {\n  background: color-mix(in srgb, var(--accent-color) 14%, transparent);\n  box-shadow: inset 4px 0 0 var(--accent-color);\n}\n\n.entry.selected .icon-ring {\n  border-color: var(--accent-color);\n  box-shadow:\n    0 0 0 4px var(--card-background-color, #fff),\n    0 0 0 6px color-mix(in srgb, var(--accent-color) 45%, transparent);\n}\n\n.entry.selected .line-dot {\n  background: var(--accent-color);\n  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 24%, transparent);\n}\n\n.entry.selected.stay .title,\n.entry.selected.move .title {\n  color: var(--primary-text-color);\n  font-weight: 700;\n}\n\n.left-icon {\n  display: flex;\n  justify-content: flex-end;\n  padding-right: 4px;\n}\n\n.icon-ring {\n  width: 32px;\n  height: 32px;\n  border-radius: 50%;\n  background: var(--card-background-color, #fff);\n  border: 3px solid var(--timeline-color, var(--primary-color));\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-shadow: 0 0 0 4px var(--card-background-color, #fff);\n}\n\n.line-slot {\n  position: relative;\n  width: 32px;\n  height: 32px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.line-dot {\n  width: 10px;\n  height: 10px;\n  border-radius: 50%;\n  background: color-mix(in srgb, white 45%, transparent);\n}\n\n.stay-icon {\n  color: var(--timeline-color, var(--primary-color));\n}\n\n.move-icon {\n  color: var(--secondary-text-color);\n}\n\n.content {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.content.location {\n  align-items: flex-start;\n}\n\n.content.location.travel {\n  flex-direction: row;\n  align-items: center;\n  gap: 6px;\n  color: var(--secondary-text-color);\n}\n\n.content.time {\n  justify-self: end;\n  text-align: right;\n}\n\n.content.time.multiline {\n  gap: 0;\n}\n\n.entry.move .title {\n  margin-left: 10px;\n  color: var(--secondary-text-color);\n}\n\n.entry.stay .title {\n  background-color: #0001;\n  padding: 3px 10px;\n  border-radius: 20px;\n}\n\n.title {\n  font-size: 0.95rem;\n  font-weight: 600;\n  color: var(--primary-text-color);\n}\n\n.meta {\n  font-size: 0.85rem;\n  color: var(--secondary-text-color);\n  font-weight: normal;\n}\n\n.meta.small {\n  font-size: 0.65rem;\n}\n\n.meta.duration {\n  color: color-mix(in srgb, var(--secondary-text-color) 60%, var(--primary-background-color));\n}\n\n.map-wrap {\n  position: relative;\n}\n\n#overview-map {\n  height: 200px;\n  --map-filter: invert(0);\n}\n\n#overview-map.dark {\n  background: #090909;\n  --map-filter: invert(0.9) hue-rotate(170deg) brightness(1.5) contrast(1.2) saturate(0.3);\n}\n\n.leaflet-tile-pane {\n  filter: var(--map-filter);\n}\n\n#overview-map.dark .leaflet-bar a {\n  background-color: #1c1c1c;\n  color: #ffffff;\n}\n\n#overview-map.dark .leaflet-bar a:hover {\n  background-color: #313131;\n}\n\n.map-reset {\n  position: absolute;\n  top: 8px;\n  right: 8px;\n  z-index: 1000;\n  --mdc-icon-button-size: 34px;\n  background: var(--card-background-color, #fff);\n  border-radius: 50%;\n  box-shadow: 0 2px 6px #0003;\n}\n\n.map-reset-left {\n  left: 8px;\n  right: auto;\n  top: auto;\n  bottom: 8px;\n}\n\n.map-reset[hidden] {\n  display: none;\n}\n\n#map-fit-mode[hidden] {\n  display: none;\n}\n\n.leaflet-pane {\n  z-index: 0 !important;\n}\n\n.leaflet-control,\n.leaflet-top,\n.leaflet-bottom {\n  z-index: 1 !important;\n}\n";
 
 var leafletCss = "/* required styles */\r\n\r\n.leaflet-pane,\r\n.leaflet-tile,\r\n.leaflet-marker-icon,\r\n.leaflet-marker-shadow,\r\n.leaflet-tile-container,\r\n.leaflet-pane > svg,\r\n.leaflet-pane > canvas,\r\n.leaflet-zoom-box,\r\n.leaflet-image-layer,\r\n.leaflet-layer {\r\n\tposition: absolute;\r\n\tleft: 0;\r\n\ttop: 0;\r\n\t}\r\n.leaflet-container {\r\n\toverflow: hidden;\r\n\t}\r\n.leaflet-tile,\r\n.leaflet-marker-icon,\r\n.leaflet-marker-shadow {\r\n\t-webkit-user-select: none;\r\n\t   -moz-user-select: none;\r\n\t        user-select: none;\r\n\t  -webkit-user-drag: none;\r\n\t}\r\n/* Prevents IE11 from highlighting tiles in blue */\r\n.leaflet-tile::selection {\r\n\tbackground: transparent;\r\n}\r\n/* Safari renders non-retina tile on retina better with this, but Chrome is worse */\r\n.leaflet-safari .leaflet-tile {\r\n\timage-rendering: -webkit-optimize-contrast;\r\n\t}\r\n/* hack that prevents hw layers \"stretching\" when loading new tiles */\r\n.leaflet-safari .leaflet-tile-container {\r\n\twidth: 1600px;\r\n\theight: 1600px;\r\n\t-webkit-transform-origin: 0 0;\r\n\t}\r\n.leaflet-marker-icon,\r\n.leaflet-marker-shadow {\r\n\tdisplay: block;\r\n\t}\r\n/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */\r\n/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */\r\n.leaflet-container .leaflet-overlay-pane svg {\r\n\tmax-width: none !important;\r\n\tmax-height: none !important;\r\n\t}\r\n.leaflet-container .leaflet-marker-pane img,\r\n.leaflet-container .leaflet-shadow-pane img,\r\n.leaflet-container .leaflet-tile-pane img,\r\n.leaflet-container img.leaflet-image-layer,\r\n.leaflet-container .leaflet-tile {\r\n\tmax-width: none !important;\r\n\tmax-height: none !important;\r\n\twidth: auto;\r\n\tpadding: 0;\r\n\t}\r\n\r\n.leaflet-container img.leaflet-tile {\r\n\t/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */\r\n\tmix-blend-mode: plus-lighter;\r\n}\r\n\r\n.leaflet-container.leaflet-touch-zoom {\r\n\t-ms-touch-action: pan-x pan-y;\r\n\ttouch-action: pan-x pan-y;\r\n\t}\r\n.leaflet-container.leaflet-touch-drag {\r\n\t-ms-touch-action: pinch-zoom;\r\n\t/* Fallback for FF which doesn't support pinch-zoom */\r\n\ttouch-action: none;\r\n\ttouch-action: pinch-zoom;\r\n}\r\n.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {\r\n\t-ms-touch-action: none;\r\n\ttouch-action: none;\r\n}\r\n.leaflet-container {\r\n\t-webkit-tap-highlight-color: transparent;\r\n}\r\n.leaflet-container a {\r\n\t-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);\r\n}\r\n.leaflet-tile {\r\n\tfilter: inherit;\r\n\tvisibility: hidden;\r\n\t}\r\n.leaflet-tile-loaded {\r\n\tvisibility: inherit;\r\n\t}\r\n.leaflet-zoom-box {\r\n\twidth: 0;\r\n\theight: 0;\r\n\t-moz-box-sizing: border-box;\r\n\t     box-sizing: border-box;\r\n\tz-index: 800;\r\n\t}\r\n/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */\r\n.leaflet-overlay-pane svg {\r\n\t-moz-user-select: none;\r\n\t}\r\n\r\n.leaflet-pane         { z-index: 400; }\r\n\r\n.leaflet-tile-pane    { z-index: 200; }\r\n.leaflet-overlay-pane { z-index: 400; }\r\n.leaflet-shadow-pane  { z-index: 500; }\r\n.leaflet-marker-pane  { z-index: 600; }\r\n.leaflet-tooltip-pane   { z-index: 650; }\r\n.leaflet-popup-pane   { z-index: 700; }\r\n\r\n.leaflet-map-pane canvas { z-index: 100; }\r\n.leaflet-map-pane svg    { z-index: 200; }\r\n\r\n.leaflet-vml-shape {\r\n\twidth: 1px;\r\n\theight: 1px;\r\n\t}\r\n.lvml {\r\n\tbehavior: url(#default#VML);\r\n\tdisplay: inline-block;\r\n\tposition: absolute;\r\n\t}\r\n\r\n\r\n/* control positioning */\r\n\r\n.leaflet-control {\r\n\tposition: relative;\r\n\tz-index: 800;\r\n\tpointer-events: visiblePainted; /* IE 9-10 doesn't have auto */\r\n\tpointer-events: auto;\r\n\t}\r\n.leaflet-top,\r\n.leaflet-bottom {\r\n\tposition: absolute;\r\n\tz-index: 1000;\r\n\tpointer-events: none;\r\n\t}\r\n.leaflet-top {\r\n\ttop: 0;\r\n\t}\r\n.leaflet-right {\r\n\tright: 0;\r\n\t}\r\n.leaflet-bottom {\r\n\tbottom: 0;\r\n\t}\r\n.leaflet-left {\r\n\tleft: 0;\r\n\t}\r\n.leaflet-control {\r\n\tfloat: left;\r\n\tclear: both;\r\n\t}\r\n.leaflet-right .leaflet-control {\r\n\tfloat: right;\r\n\t}\r\n.leaflet-top .leaflet-control {\r\n\tmargin-top: 10px;\r\n\t}\r\n.leaflet-bottom .leaflet-control {\r\n\tmargin-bottom: 10px;\r\n\t}\r\n.leaflet-left .leaflet-control {\r\n\tmargin-left: 10px;\r\n\t}\r\n.leaflet-right .leaflet-control {\r\n\tmargin-right: 10px;\r\n\t}\r\n\r\n\r\n/* zoom and fade animations */\r\n\r\n.leaflet-fade-anim .leaflet-popup {\r\n\topacity: 0;\r\n\t-webkit-transition: opacity 0.2s linear;\r\n\t   -moz-transition: opacity 0.2s linear;\r\n\t        transition: opacity 0.2s linear;\r\n\t}\r\n.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {\r\n\topacity: 1;\r\n\t}\r\n.leaflet-zoom-animated {\r\n\t-webkit-transform-origin: 0 0;\r\n\t    -ms-transform-origin: 0 0;\r\n\t        transform-origin: 0 0;\r\n\t}\r\nsvg.leaflet-zoom-animated {\r\n\twill-change: transform;\r\n}\r\n\r\n.leaflet-zoom-anim .leaflet-zoom-animated {\r\n\t-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);\r\n\t   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);\r\n\t        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);\r\n\t}\r\n.leaflet-zoom-anim .leaflet-tile,\r\n.leaflet-pan-anim .leaflet-tile {\r\n\t-webkit-transition: none;\r\n\t   -moz-transition: none;\r\n\t        transition: none;\r\n\t}\r\n\r\n.leaflet-zoom-anim .leaflet-zoom-hide {\r\n\tvisibility: hidden;\r\n\t}\r\n\r\n\r\n/* cursors */\r\n\r\n.leaflet-interactive {\r\n\tcursor: pointer;\r\n\t}\r\n.leaflet-grab {\r\n\tcursor: -webkit-grab;\r\n\tcursor:    -moz-grab;\r\n\tcursor:         grab;\r\n\t}\r\n.leaflet-crosshair,\r\n.leaflet-crosshair .leaflet-interactive {\r\n\tcursor: crosshair;\r\n\t}\r\n.leaflet-popup-pane,\r\n.leaflet-control {\r\n\tcursor: auto;\r\n\t}\r\n.leaflet-dragging .leaflet-grab,\r\n.leaflet-dragging .leaflet-grab .leaflet-interactive,\r\n.leaflet-dragging .leaflet-marker-draggable {\r\n\tcursor: move;\r\n\tcursor: -webkit-grabbing;\r\n\tcursor:    -moz-grabbing;\r\n\tcursor:         grabbing;\r\n\t}\r\n\r\n/* marker & overlays interactivity */\r\n.leaflet-marker-icon,\r\n.leaflet-marker-shadow,\r\n.leaflet-image-layer,\r\n.leaflet-pane > svg path,\r\n.leaflet-tile-container {\r\n\tpointer-events: none;\r\n\t}\r\n\r\n.leaflet-marker-icon.leaflet-interactive,\r\n.leaflet-image-layer.leaflet-interactive,\r\n.leaflet-pane > svg path.leaflet-interactive,\r\nsvg.leaflet-image-layer.leaflet-interactive path {\r\n\tpointer-events: visiblePainted; /* IE 9-10 doesn't have auto */\r\n\tpointer-events: auto;\r\n\t}\r\n\r\n/* visual tweaks */\r\n\r\n.leaflet-container {\r\n\tbackground: #ddd;\r\n\toutline-offset: 1px;\r\n\t}\r\n.leaflet-container a {\r\n\tcolor: #0078A8;\r\n\t}\r\n.leaflet-zoom-box {\r\n\tborder: 2px dotted #38f;\r\n\tbackground: rgba(255,255,255,0.5);\r\n\t}\r\n\r\n\r\n/* general typography */\r\n.leaflet-container {\r\n\tfont-family: \"Helvetica Neue\", Arial, Helvetica, sans-serif;\r\n\tfont-size: 12px;\r\n\tfont-size: 0.75rem;\r\n\tline-height: 1.5;\r\n\t}\r\n\r\n\r\n/* general toolbar styles */\r\n\r\n.leaflet-bar {\r\n\tbox-shadow: 0 1px 5px rgba(0,0,0,0.65);\r\n\tborder-radius: 4px;\r\n\t}\r\n.leaflet-bar a {\r\n\tbackground-color: #fff;\r\n\tborder-bottom: 1px solid #ccc;\r\n\twidth: 26px;\r\n\theight: 26px;\r\n\tline-height: 26px;\r\n\tdisplay: block;\r\n\ttext-align: center;\r\n\ttext-decoration: none;\r\n\tcolor: black;\r\n\t}\r\n.leaflet-bar a,\r\n.leaflet-control-layers-toggle {\r\n\tbackground-position: 50% 50%;\r\n\tbackground-repeat: no-repeat;\r\n\tdisplay: block;\r\n\t}\r\n.leaflet-bar a:hover,\r\n.leaflet-bar a:focus {\r\n\tbackground-color: #f4f4f4;\r\n\t}\r\n.leaflet-bar a:first-child {\r\n\tborder-top-left-radius: 4px;\r\n\tborder-top-right-radius: 4px;\r\n\t}\r\n.leaflet-bar a:last-child {\r\n\tborder-bottom-left-radius: 4px;\r\n\tborder-bottom-right-radius: 4px;\r\n\tborder-bottom: none;\r\n\t}\r\n.leaflet-bar a.leaflet-disabled {\r\n\tcursor: default;\r\n\tbackground-color: #f4f4f4;\r\n\tcolor: #bbb;\r\n\t}\r\n\r\n.leaflet-touch .leaflet-bar a {\r\n\twidth: 30px;\r\n\theight: 30px;\r\n\tline-height: 30px;\r\n\t}\r\n.leaflet-touch .leaflet-bar a:first-child {\r\n\tborder-top-left-radius: 2px;\r\n\tborder-top-right-radius: 2px;\r\n\t}\r\n.leaflet-touch .leaflet-bar a:last-child {\r\n\tborder-bottom-left-radius: 2px;\r\n\tborder-bottom-right-radius: 2px;\r\n\t}\r\n\r\n/* zoom control */\r\n\r\n.leaflet-control-zoom-in,\r\n.leaflet-control-zoom-out {\r\n\tfont: bold 18px 'Lucida Console', Monaco, monospace;\r\n\ttext-indent: 1px;\r\n\t}\r\n\r\n.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {\r\n\tfont-size: 22px;\r\n\t}\r\n\r\n\r\n/* layers control */\r\n\r\n.leaflet-control-layers {\r\n\tbox-shadow: 0 1px 5px rgba(0,0,0,0.4);\r\n\tbackground: #fff;\r\n\tborder-radius: 5px;\r\n\t}\r\n.leaflet-control-layers-toggle {\r\n\tbackground-image: url(images/layers.png);\r\n\twidth: 36px;\r\n\theight: 36px;\r\n\t}\r\n.leaflet-retina .leaflet-control-layers-toggle {\r\n\tbackground-image: url(images/layers-2x.png);\r\n\tbackground-size: 26px 26px;\r\n\t}\r\n.leaflet-touch .leaflet-control-layers-toggle {\r\n\twidth: 44px;\r\n\theight: 44px;\r\n\t}\r\n.leaflet-control-layers .leaflet-control-layers-list,\r\n.leaflet-control-layers-expanded .leaflet-control-layers-toggle {\r\n\tdisplay: none;\r\n\t}\r\n.leaflet-control-layers-expanded .leaflet-control-layers-list {\r\n\tdisplay: block;\r\n\tposition: relative;\r\n\t}\r\n.leaflet-control-layers-expanded {\r\n\tpadding: 6px 10px 6px 6px;\r\n\tcolor: #333;\r\n\tbackground: #fff;\r\n\t}\r\n.leaflet-control-layers-scrollbar {\r\n\toverflow-y: scroll;\r\n\toverflow-x: hidden;\r\n\tpadding-right: 5px;\r\n\t}\r\n.leaflet-control-layers-selector {\r\n\tmargin-top: 2px;\r\n\tposition: relative;\r\n\ttop: 1px;\r\n\t}\r\n.leaflet-control-layers label {\r\n\tdisplay: block;\r\n\tfont-size: 13px;\r\n\tfont-size: 1.08333em;\r\n\t}\r\n.leaflet-control-layers-separator {\r\n\theight: 0;\r\n\tborder-top: 1px solid #ddd;\r\n\tmargin: 5px -10px 5px -6px;\r\n\t}\r\n\r\n/* Default icon URLs */\r\n.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */\r\n\tbackground-image: url(images/marker-icon.png);\r\n\t}\r\n\r\n\r\n/* attribution and scale controls */\r\n\r\n.leaflet-container .leaflet-control-attribution {\r\n\tbackground: #fff;\r\n\tbackground: rgba(255, 255, 255, 0.8);\r\n\tmargin: 0;\r\n\t}\r\n.leaflet-control-attribution,\r\n.leaflet-control-scale-line {\r\n\tpadding: 0 5px;\r\n\tcolor: #333;\r\n\tline-height: 1.4;\r\n\t}\r\n.leaflet-control-attribution a {\r\n\ttext-decoration: none;\r\n\t}\r\n.leaflet-control-attribution a:hover,\r\n.leaflet-control-attribution a:focus {\r\n\ttext-decoration: underline;\r\n\t}\r\n.leaflet-attribution-flag {\r\n\tdisplay: inline !important;\r\n\tvertical-align: baseline !important;\r\n\twidth: 1em;\r\n\theight: 0.6669em;\r\n\t}\r\n.leaflet-left .leaflet-control-scale {\r\n\tmargin-left: 5px;\r\n\t}\r\n.leaflet-bottom .leaflet-control-scale {\r\n\tmargin-bottom: 5px;\r\n\t}\r\n.leaflet-control-scale-line {\r\n\tborder: 2px solid #777;\r\n\tborder-top: none;\r\n\tline-height: 1.1;\r\n\tpadding: 2px 5px 1px;\r\n\twhite-space: nowrap;\r\n\t-moz-box-sizing: border-box;\r\n\t     box-sizing: border-box;\r\n\tbackground: rgba(255, 255, 255, 0.8);\r\n\ttext-shadow: 1px 1px #fff;\r\n\t}\r\n.leaflet-control-scale-line:not(:first-child) {\r\n\tborder-top: 2px solid #777;\r\n\tborder-bottom: none;\r\n\tmargin-top: -2px;\r\n\t}\r\n.leaflet-control-scale-line:not(:first-child):not(:last-child) {\r\n\tborder-bottom: 2px solid #777;\r\n\t}\r\n\r\n.leaflet-touch .leaflet-control-attribution,\r\n.leaflet-touch .leaflet-control-layers,\r\n.leaflet-touch .leaflet-bar {\r\n\tbox-shadow: none;\r\n\t}\r\n.leaflet-touch .leaflet-control-layers,\r\n.leaflet-touch .leaflet-bar {\r\n\tborder: 2px solid rgba(0,0,0,0.2);\r\n\tbackground-clip: padding-box;\r\n\t}\r\n\r\n\r\n/* popup */\r\n\r\n.leaflet-popup {\r\n\tposition: absolute;\r\n\ttext-align: center;\r\n\tmargin-bottom: 20px;\r\n\t}\r\n.leaflet-popup-content-wrapper {\r\n\tpadding: 1px;\r\n\ttext-align: left;\r\n\tborder-radius: 12px;\r\n\t}\r\n.leaflet-popup-content {\r\n\tmargin: 13px 24px 13px 20px;\r\n\tline-height: 1.3;\r\n\tfont-size: 13px;\r\n\tfont-size: 1.08333em;\r\n\tmin-height: 1px;\r\n\t}\r\n.leaflet-popup-content p {\r\n\tmargin: 17px 0;\r\n\tmargin: 1.3em 0;\r\n\t}\r\n.leaflet-popup-tip-container {\r\n\twidth: 40px;\r\n\theight: 20px;\r\n\tposition: absolute;\r\n\tleft: 50%;\r\n\tmargin-top: -1px;\r\n\tmargin-left: -20px;\r\n\toverflow: hidden;\r\n\tpointer-events: none;\r\n\t}\r\n.leaflet-popup-tip {\r\n\twidth: 17px;\r\n\theight: 17px;\r\n\tpadding: 1px;\r\n\r\n\tmargin: -10px auto 0;\r\n\tpointer-events: auto;\r\n\r\n\t-webkit-transform: rotate(45deg);\r\n\t   -moz-transform: rotate(45deg);\r\n\t    -ms-transform: rotate(45deg);\r\n\t        transform: rotate(45deg);\r\n\t}\r\n.leaflet-popup-content-wrapper,\r\n.leaflet-popup-tip {\r\n\tbackground: white;\r\n\tcolor: #333;\r\n\tbox-shadow: 0 3px 14px rgba(0,0,0,0.4);\r\n\t}\r\n.leaflet-container a.leaflet-popup-close-button {\r\n\tposition: absolute;\r\n\ttop: 0;\r\n\tright: 0;\r\n\tborder: none;\r\n\ttext-align: center;\r\n\twidth: 24px;\r\n\theight: 24px;\r\n\tfont: 16px/24px Tahoma, Verdana, sans-serif;\r\n\tcolor: #757575;\r\n\ttext-decoration: none;\r\n\tbackground: transparent;\r\n\t}\r\n.leaflet-container a.leaflet-popup-close-button:hover,\r\n.leaflet-container a.leaflet-popup-close-button:focus {\r\n\tcolor: #585858;\r\n\t}\r\n.leaflet-popup-scrolled {\r\n\toverflow: auto;\r\n\t}\r\n\r\n.leaflet-oldie .leaflet-popup-content-wrapper {\r\n\t-ms-zoom: 1;\r\n\t}\r\n.leaflet-oldie .leaflet-popup-tip {\r\n\twidth: 24px;\r\n\tmargin: 0 auto;\r\n\r\n\t-ms-filter: \"progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)\";\r\n\tfilter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);\r\n\t}\r\n\r\n.leaflet-oldie .leaflet-control-zoom,\r\n.leaflet-oldie .leaflet-control-layers,\r\n.leaflet-oldie .leaflet-popup-content-wrapper,\r\n.leaflet-oldie .leaflet-popup-tip {\r\n\tborder: 1px solid #999;\r\n\t}\r\n\r\n\r\n/* div icon */\r\n\r\n.leaflet-div-icon {\r\n\tbackground: #fff;\r\n\tborder: 1px solid #666;\r\n\t}\r\n\r\n\r\n/* Tooltip */\r\n/* Base styles for the element that has a tooltip */\r\n.leaflet-tooltip {\r\n\tposition: absolute;\r\n\tpadding: 6px;\r\n\tbackground-color: #fff;\r\n\tborder: 1px solid #fff;\r\n\tborder-radius: 3px;\r\n\tcolor: #222;\r\n\twhite-space: nowrap;\r\n\t-webkit-user-select: none;\r\n\t-moz-user-select: none;\r\n\t-ms-user-select: none;\r\n\tuser-select: none;\r\n\tpointer-events: none;\r\n\tbox-shadow: 0 1px 3px rgba(0,0,0,0.4);\r\n\t}\r\n.leaflet-tooltip.leaflet-interactive {\r\n\tcursor: pointer;\r\n\tpointer-events: auto;\r\n\t}\r\n.leaflet-tooltip-top:before,\r\n.leaflet-tooltip-bottom:before,\r\n.leaflet-tooltip-left:before,\r\n.leaflet-tooltip-right:before {\r\n\tposition: absolute;\r\n\tpointer-events: none;\r\n\tborder: 6px solid transparent;\r\n\tbackground: transparent;\r\n\tcontent: \"\";\r\n\t}\r\n\r\n/* Directions */\r\n\r\n.leaflet-tooltip-bottom {\r\n\tmargin-top: 6px;\r\n}\r\n.leaflet-tooltip-top {\r\n\tmargin-top: -6px;\r\n}\r\n.leaflet-tooltip-bottom:before,\r\n.leaflet-tooltip-top:before {\r\n\tleft: 50%;\r\n\tmargin-left: -6px;\r\n\t}\r\n.leaflet-tooltip-top:before {\r\n\tbottom: 0;\r\n\tmargin-bottom: -12px;\r\n\tborder-top-color: #fff;\r\n\t}\r\n.leaflet-tooltip-bottom:before {\r\n\ttop: 0;\r\n\tmargin-top: -12px;\r\n\tmargin-left: -6px;\r\n\tborder-bottom-color: #fff;\r\n\t}\r\n.leaflet-tooltip-left {\r\n\tmargin-left: -6px;\r\n}\r\n.leaflet-tooltip-right {\r\n\tmargin-left: 6px;\r\n}\r\n.leaflet-tooltip-left:before,\r\n.leaflet-tooltip-right:before {\r\n\ttop: 50%;\r\n\tmargin-top: -6px;\r\n\t}\r\n.leaflet-tooltip-left:before {\r\n\tright: 0;\r\n\tmargin-right: -12px;\r\n\tborder-left-color: #fff;\r\n\t}\r\n.leaflet-tooltip-right:before {\r\n\tleft: 0;\r\n\tmargin-left: -12px;\r\n\tborder-right-color: #fff;\r\n\t}\r\n\r\n/* Printing */\r\n\r\n@media print {\r\n\t/* Prevent printers from removing background-images of controls. */\r\n\t.leaflet-control {\r\n\t\t-webkit-print-color-adjust: exact;\r\n\t\tprint-color-adjust: exact;\r\n\t\t}\r\n\t}\r\n";
 
 var t,r;!function(e){e.language="language",e.system="system",e.comma_decimal="comma_decimal",e.decimal_comma="decimal_comma",e.space_comma="space_comma",e.none="none";}(t||(t={})),function(e){e.language="language",e.system="system",e.am_pm="12",e.twenty_four="24";}(r||(r={}));var b=function(e){if(e.time_format===r.language||e.time_format===r.system){var t=e.time_format===r.language?e.language:void 0,n=(new Date).toLocaleString(t);return n.includes("AM")||n.includes("PM")}return e.time_format===r.am_pm},D=function(e,t){return S(t).format(e)},S=function(e){return new Intl.DateTimeFormat(e.language,{hour:"numeric",minute:"2-digit",hour12:b(e)})};
 
-var card$1 = {
+var card$2 = {
 	labels: {
 		reset_map_zoom: "Reset map zoom",
 		previous_day: "Previous day",
@@ -12,19 +12,31 @@ var card$1 = {
 		pick_date: "Pick date",
 		refresh: "Refresh",
 		next_day: "Next day",
-		update_interval: "Update interval"
+		update_interval: "Update interval",
+		pick_time_range: "Choose time range"
 	},
 	timeline: {
 		loading: "Loading timeline..."
 	},
-	description: "Daily location timeline from GPS history."
+	description: "Daily location timeline from GPS history.",
+	time_range: {
+		title: "Time range",
+		from: "From",
+		to: "To",
+		all_day: "All day",
+		cancel: "Cancel",
+		apply: "Apply",
+		invalid: "Enter both start and end time.",
+		end_after_start: "End time must be later than start time."
+	}
 };
-var timeline$1 = {
+var timeline$2 = {
 	empty: "No location history for this day.",
 	unknown_location: "Unknown location",
-	moving: "Moving"
+	moving: "Moving",
+	empty_range: "No location history in the selected time range."
 };
-var utils$1 = {
+var utils$2 = {
 	time: {
 		all_day: "all day"
 	},
@@ -38,12 +50,12 @@ var utils$1 = {
 	}
 };
 var en = {
-	card: card$1,
-	timeline: timeline$1,
-	utils: utils$1
+	card: card$2,
+	timeline: timeline$2,
+	utils: utils$2
 };
 
-var card = {
+var card$1 = {
 	labels: {
 		reset_map_zoom: "Kaartzoom resetten",
 		previous_day: "Vorige dag",
@@ -51,19 +63,31 @@ var card = {
 		pick_date: "Datum kiezen",
 		refresh: "Verversen",
 		next_day: "Volgende dag",
-		update_interval: "Update-interval"
+		update_interval: "Update-interval",
+		pick_time_range: "Tijdsbereik kiezen"
 	},
 	timeline: {
 		loading: "Tijdlijn laden..."
 	},
-	description: "Dagelijkse locatietijdlijn uit GPS-geschiedenis."
+	description: "Dagelijkse locatietijdlijn uit GPS-geschiedenis.",
+	time_range: {
+		title: "Tijdsbereik",
+		from: "Van",
+		to: "Tot",
+		all_day: "Hele dag",
+		cancel: "Annuleren",
+		apply: "Toepassen",
+		invalid: "Vul een begin- en eindtijd in.",
+		end_after_start: "De eindtijd moet later zijn dan de begintijd."
+	}
 };
-var timeline = {
+var timeline$1 = {
 	empty: "Geen locatiegeschiedenis voor deze dag.",
 	unknown_location: "Onbekende locatie",
-	moving: "Onderweg"
+	moving: "Onderweg",
+	empty_range: "Geen locatiegeschiedenis in het geselecteerde tijdsbereik."
 };
-var utils = {
+var utils$1 = {
 	time: {
 		all_day: "hele dag"
 	},
@@ -77,12 +101,63 @@ var utils = {
 	}
 };
 var nl = {
+	card: card$1,
+	timeline: timeline$1,
+	utils: utils$1
+};
+
+var card = {
+	labels: {
+		reset_map_zoom: "Сбросить масштаб карты",
+		previous_day: "Предыдущий день",
+		debug: "Отладка",
+		pick_date: "Выбрать дату",
+		refresh: "Обновить",
+		next_day: "Следующий день",
+		update_interval: "Интервал обновления",
+		pick_time_range: "Выбрать временной интервал"
+	},
+	timeline: {
+		loading: "Загрузка истории..."
+	},
+	time_range: {
+		title: "Временной интервал",
+		from: "С",
+		to: "До",
+		all_day: "Весь день",
+		cancel: "Отмена",
+		apply: "Применить",
+		invalid: "Укажите время начала и окончания.",
+		end_after_start: "Время окончания должно быть позже времени начала."
+	},
+	description: "История перемещений за день по GPS-координатам."
+};
+var timeline = {
+	empty: "За этот день нет истории местоположения.",
+	empty_range: "За выбранный интервал нет данных.",
+	unknown_location: "Неизвестное место",
+	moving: "Движение"
+};
+var utils = {
+	time: {
+		all_day: "весь день"
+	},
+	duration: {
+		hour_short: "ч",
+		minute_short: "мин"
+	},
+	errors: {
+		history_api_unavailable: "WebSocket API истории недоступен. Убедитесь, что интеграция Recorder/History включена.",
+		unable_to_load_history: "Не удалось загрузить историю"
+	}
+};
+var ru = {
 	card: card,
 	timeline: timeline,
 	utils: utils
 };
 
-const languages = {en, nl};
+const languages = {en, nl, ru};
 
 function localize(string, search = "", replace = "") {
     let lang = localStorage.getItem("selectedLanguage");
@@ -15907,9 +15982,16 @@ function normalizeLatLng(point) {
     return null;
 }
 
-function renderTimeline(segments, locale, config, selectedSegmentIndex = null) {
+function renderTimeline(
+    segments,
+    locale,
+    config,
+    selectedSegmentIndex = null,
+    hideDayBoundaryTimes = true,
+    timeRangeActive = false,
+) {
     if (!segments || segments.length === 0) {
-        return `<div class="empty">${localize("timeline.empty")}</div>`;
+        return `<div class="empty">${localize(timeRangeActive ? "timeline.empty_range" : "timeline.empty")}</div>`;
     }
 
     const entries = segments.map((segment, index) => ({segment, index}));
@@ -15931,8 +16013,8 @@ function renderTimeline(segments, locale, config, selectedSegmentIndex = null) {
                   iconMap: config.activity_icon_map || {},
                   distanceUnit: config.distance_unit || "metric",
                   hideMoving: Boolean(config.hide_moving),
-                  hideStartTime: index === 0 && segment.type === "stay",
-                  hideEndTime: index === segments.length - 1 && segment.type === "stay",
+                  hideStartTime: hideDayBoundaryTimes && index === 0 && segment.type === "stay",
+                  hideEndTime: hideDayBoundaryTimes && index === segments.length - 1 && segment.type === "stay",
                   selected: index === selectedSegmentIndex,
               }),
           )
@@ -16128,6 +16210,192 @@ function getConfigFormSchema() {
     };
 }
 
+const FULL_DAY_TIME_RANGE = Object.freeze({startMinutes: 0, endMinutes: 24 * 60});
+
+function isFullDayTimeRange(range) {
+    return Number(range?.startMinutes) === 0 && Number(range?.endMinutes) === 24 * 60;
+}
+
+function parseTimeToMinutes(value) {
+    if (typeof value !== "string" || !/^\d{2}:\d{2}$/.test(value)) return null;
+    const [hours, minutes] = value.split(":").map(Number);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+    return hours * 60 + minutes;
+}
+
+function formatMinutesAsTime(minutes) {
+    const normalized = Math.min(24 * 60 - 1, Math.max(0, Number(minutes) || 0));
+    const hours = Math.floor(normalized / 60);
+    const mins = normalized % 60;
+    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
+
+function getTimeRangeBounds(date, range) {
+    if (isFullDayTimeRange(range)) {
+        return {start: startOfDay(date).getTime(), end: endOfDay(date).getTime()};
+    }
+
+    const start = startOfDay(date);
+    start.setMinutes(Number(range.startMinutes), 0, 0);
+    const end = startOfDay(date);
+    end.setMinutes(Number(range.endMinutes), 0, 0);
+    return {start: start.getTime(), end: end.getTime()};
+}
+
+function isDateInsideTimeRange(date, selectedDate, range) {
+    if (isFullDayTimeRange(range)) return true;
+    const timestamp = date instanceof Date ? date.getTime() : Number(date);
+    const {start, end} = getTimeRangeBounds(selectedDate, range);
+    return Number.isFinite(timestamp) && timestamp >= start && timestamp <= end;
+}
+
+function filterDayDataByTimeRange(dayData, date, range) {
+    if (!dayData || dayData.loading || dayData.error || !Array.isArray(dayData.tracks)) return dayData;
+    if (isFullDayTimeRange(range)) return dayData;
+
+    const bounds = getTimeRangeBounds(date, range);
+    return {
+        ...dayData,
+        tracks: dayData.tracks.map((track) => clipTrackToRange(track, bounds.start, bounds.end)),
+    };
+}
+
+function clipTrackToRange(track, rangeStart, rangeEnd) {
+    const segments = Array.isArray(track?.segments)
+        ? track.segments.map((segment) => clipSegmentToRange(segment, rangeStart, rangeEnd)).filter(Boolean)
+        : [];
+    const points = clipPointSeries(Array.isArray(track?.points) ? track.points : [], rangeStart, rangeEnd);
+    return {...track, points, segments};
+}
+
+function clipSegmentToRange(segment, rangeStart, rangeEnd) {
+    if (!segment) return null;
+    const segmentStart = toTimestamp(segment.start);
+    const segmentEnd = toTimestamp(segment.end);
+    if (!Number.isFinite(segmentStart) || !Number.isFinite(segmentEnd)) return null;
+    if (segmentEnd < rangeStart || segmentStart > rangeEnd) return null;
+
+    const start = Math.max(segmentStart, rangeStart);
+    const end = Math.min(segmentEnd, rangeEnd);
+    if (end <= start) return null;
+
+    if (segment.type === "stay") {
+        return {
+            ...segment,
+            start: new Date(start),
+            end: new Date(end),
+            durationMs: Math.max(0, end - start),
+        };
+    }
+
+    if (segment.type === "move") {
+        const points = clipPointSeries(Array.isArray(segment.points) ? segment.points : [], start, end);
+        if (points.length < 2) return null;
+        return {
+            ...segment,
+            start: new Date(start),
+            end: new Date(end),
+            durationMs: Math.max(0, end - start),
+            distanceM: calculateDistance(points),
+            points,
+        };
+    }
+
+    return null;
+}
+
+function clipPointSeries(points, rangeStart, rangeEnd) {
+    const sorted = points
+        .filter(
+            (point) =>
+                Array.isArray(point?.point) && point.point.length >= 2 && Number.isFinite(toTimestamp(point.timestamp)),
+        )
+        .slice()
+        .sort((a, b) => toTimestamp(a.timestamp) - toTimestamp(b.timestamp));
+    if (sorted.length === 0 || rangeEnd < rangeStart) return [];
+
+    const firstTime = toTimestamp(sorted[0].timestamp);
+    const lastTime = toTimestamp(sorted[sorted.length - 1].timestamp);
+    if (rangeEnd < firstTime || rangeStart > lastTime) return [];
+
+    const start = Math.max(rangeStart, firstTime);
+    const end = Math.min(rangeEnd, lastTime);
+    const result = [];
+
+    pushUniquePoint(result, pointAtTimestamp(sorted, start));
+    for (const point of sorted) {
+        const timestamp = toTimestamp(point.timestamp);
+        if (timestamp > start && timestamp < end) {
+            pushUniquePoint(result, clonePoint(point, timestamp));
+        }
+    }
+    pushUniquePoint(result, pointAtTimestamp(sorted, end));
+
+    return result;
+}
+
+function pointAtTimestamp(points, targetTimestamp) {
+    const firstTime = toTimestamp(points[0].timestamp);
+    if (targetTimestamp <= firstTime) return clonePoint(points[0], firstTime);
+
+    const last = points[points.length - 1];
+    const lastTime = toTimestamp(last.timestamp);
+    if (targetTimestamp >= lastTime) return clonePoint(last, lastTime);
+
+    for (let index = 0; index < points.length - 1; index += 1) {
+        const a = points[index];
+        const b = points[index + 1];
+        const aTime = toTimestamp(a.timestamp);
+        const bTime = toTimestamp(b.timestamp);
+        if (targetTimestamp === aTime) return clonePoint(a, aTime);
+        if (targetTimestamp === bTime) return clonePoint(b, bTime);
+        if (targetTimestamp > aTime && targetTimestamp < bTime) {
+            const ratio = (targetTimestamp - aTime) / (bTime - aTime);
+            const lat = Number(a.point[0]) + (Number(b.point[0]) - Number(a.point[0])) * ratio;
+            const lon = Number(a.point[1]) + (Number(b.point[1]) - Number(a.point[1])) * ratio;
+            return {...a, point: [lat, lon], timestamp: new Date(targetTimestamp)};
+        }
+    }
+    return null;
+}
+
+function clonePoint(point, timestamp) {
+    return {
+        ...point,
+        point: [Number(point.point[0]), Number(point.point[1])],
+        timestamp: new Date(timestamp),
+    };
+}
+
+function pushUniquePoint(points, point) {
+    if (!point) return;
+    const previous = points[points.length - 1];
+    if (
+        previous &&
+        toTimestamp(previous.timestamp) === toTimestamp(point.timestamp) &&
+        previous.point[0] === point.point[0] &&
+        previous.point[1] === point.point[1]
+    ) {
+        return;
+    }
+    points.push(point);
+}
+
+function calculateDistance(points) {
+    let distance = 0;
+    for (let index = 1; index < points.length; index += 1) {
+        distance += haversineMeters(toLatLon(points[index - 1]), toLatLon(points[index]));
+    }
+    return distance;
+}
+
+function toTimestamp(value) {
+    if (value instanceof Date) return value.getTime();
+    const timestamp = Number(value);
+    return Number.isFinite(timestamp) ? timestamp : new Date(value).getTime();
+}
+
 const DEFAULT_CONFIG = {
     entity: [],
     places_entity: [],
@@ -16162,6 +16430,7 @@ class TimelineCard extends HTMLElement {
         this._touchStart = null;
         this._activeEntityIndex = 0;
         this._selectedSegmentIndex = null;
+        this._timeRange = {...FULL_DAY_TIME_RANGE};
         this._timelineCollapsed = false;
         this._updateIntervalId = null;
         this._viewportAnimationFrame = null;
@@ -16183,6 +16452,7 @@ class TimelineCard extends HTMLElement {
 
         this._activeEntityIndex = 0;
         this._selectedSegmentIndex = null;
+        this._timeRange = {...FULL_DAY_TIME_RANGE};
         this._timelineCollapsed = Boolean(this._config.collapse_timeline);
         this._selectedDate = startOfDay(new Date());
         this._resetMapFitMode();
@@ -16343,11 +16613,12 @@ class TimelineCard extends HTMLElement {
         this._ensureBaseLayout();
 
         const dateKey = formatDate(this._selectedDate);
-        const dayData = this._cache.get(dateKey) || {
+        const rawDayData = this._cache.get(dateKey) || {
             loading: false,
             tracks: null,
             error: null,
         };
+        const dayData = this._applyTimeRangeToDayData(rawDayData);
 
         this.shadowRoot.getElementById("timeline-date").textContent = formatDate(
             this._selectedDate,
@@ -16356,6 +16627,7 @@ class TimelineCard extends HTMLElement {
         const datePicker = this.shadowRoot.getElementById("timeline-date-picker");
         datePicker.value = formatDate(this._selectedDate);
         datePicker.max = formatDate(new Date());
+        this._updateTimeRangeControls();
 
         this.shadowRoot
             .querySelector("[data-action='next']")
@@ -16416,17 +16688,41 @@ class TimelineCard extends HTMLElement {
                       <span id="timeline-date" class="date"></span>
                       <ha-icon class="date-caret" icon="mdi:menu-down"></ha-icon>
                     </button>
+                    <span id="time-range-summary" class="time-range-summary"></span>
                     <input id="timeline-date-picker" class="date-picker-input" type="date">
                   </div>
                   <div class="header-actions">
                     <ha-icon-button class="nav-button" data-action="refresh" label="${localize("card.labels.refresh")}"><ha-icon icon="mdi:refresh"></ha-icon></ha-icon-button>
                     <ha-icon-button class="nav-button" data-action="next" label="${localize("card.labels.next_day")}"><ha-icon icon="mdi:chevron-right"></ha-icon></ha-icon-button>
+                    <ha-icon-button id="time-range-button" class="nav-button time-range-button" data-action="open-time-range" label="${localize("card.labels.pick_time_range")}"><ha-icon icon="mdi:clock-time-four-outline"></ha-icon></ha-icon-button>
                   </div>
                 </div>
                 <div id="timeline-body" class="body"></div>
                 </div>
               </div>
             </div>
+            <dialog id="time-range-dialog" class="time-range-dialog">
+              <form method="dialog" class="time-range-form">
+                <div class="time-range-title">${localize("card.time_range.title")}</div>
+                <div class="time-range-fields">
+                  <label>
+                    <span>${localize("card.time_range.from")}</span>
+                    <input id="time-range-start" type="time" step="60">
+                  </label>
+                  <span class="time-range-separator">—</span>
+                  <label>
+                    <span>${localize("card.time_range.to")}</span>
+                    <input id="time-range-end" type="time" step="60">
+                  </label>
+                </div>
+                <div id="time-range-error" class="time-range-error" role="alert" hidden></div>
+                <div class="time-range-actions">
+                  <button type="button" class="time-range-all-day" data-action="time-range-full-day">${localize("card.time_range.all_day")}</button>
+                  <button type="submit" value="cancel">${localize("card.time_range.cancel")}</button>
+                  <button type="button" class="time-range-apply" data-action="apply-time-range">${localize("card.time_range.apply")}</button>
+                </div>
+              </form>
+            </dialog>
           </ha-card>
         `;
 
@@ -16443,6 +16739,101 @@ class TimelineCard extends HTMLElement {
         }
         input.focus();
         input.click();
+    }
+
+    _openTimeRangeDialog() {
+        const dialog = this.shadowRoot?.getElementById("time-range-dialog");
+        const startInput = this.shadowRoot?.getElementById("time-range-start");
+        const endInput = this.shadowRoot?.getElementById("time-range-end");
+        if (!dialog || !startInput || !endInput) return;
+
+        startInput.value = isFullDayTimeRange(this._timeRange)
+            ? "00:00"
+            : formatMinutesAsTime(this._timeRange.startMinutes);
+        endInput.value = isFullDayTimeRange(this._timeRange)
+            ? "23:59"
+            : formatMinutesAsTime(this._timeRange.endMinutes);
+        this._showTimeRangeError("");
+
+        if (typeof dialog.showModal === "function") {
+            if (!dialog.open) dialog.showModal();
+        } else {
+            dialog.setAttribute("open", "");
+        }
+    }
+
+    _closeTimeRangeDialog() {
+        const dialog = this.shadowRoot?.getElementById("time-range-dialog");
+        if (!dialog) return;
+        if (typeof dialog.close === "function") {
+            if (dialog.open) dialog.close();
+        } else {
+            dialog.removeAttribute("open");
+        }
+    }
+
+    _applyTimeRangeDialog() {
+        const startInput = this.shadowRoot?.getElementById("time-range-start");
+        const endInput = this.shadowRoot?.getElementById("time-range-end");
+        const startMinutes = parseTimeToMinutes(startInput?.value || "");
+        const endMinutes = parseTimeToMinutes(endInput?.value || "");
+
+        if (startMinutes === null || endMinutes === null) {
+            this._showTimeRangeError(localize("card.time_range.invalid"));
+            return;
+        }
+        if (startMinutes >= endMinutes) {
+            this._showTimeRangeError(localize("card.time_range.end_after_start"));
+            return;
+        }
+
+        this._setTimeRange({startMinutes, endMinutes});
+        this._closeTimeRangeDialog();
+    }
+
+    _setFullDayTimeRange() {
+        this._setTimeRange({...FULL_DAY_TIME_RANGE});
+        this._closeTimeRangeDialog();
+    }
+
+    _setTimeRange(range) {
+        this._timeRange = {
+            startMinutes: Number(range.startMinutes),
+            endMinutes: Number(range.endMinutes),
+        };
+        this._selectedSegmentIndex = null;
+        this._resetMapFitMode();
+        this._updateSelectedTimelineEntry(false);
+        this._updateTimeRangeControls();
+        this._render();
+    }
+
+    _updateTimeRangeControls() {
+        const summary = this.shadowRoot?.getElementById("time-range-summary");
+        const button = this.shadowRoot?.getElementById("time-range-button");
+        const label = this._timeRangeLabel();
+        if (summary) summary.textContent = label;
+        if (button) {
+            const active = !isFullDayTimeRange(this._timeRange);
+            button.classList.toggle("active", active);
+            button.setAttribute("label", `${localize("card.labels.pick_time_range")}: ${label}`);
+        }
+    }
+
+    _timeRangeLabel() {
+        if (isFullDayTimeRange(this._timeRange)) return localize("card.time_range.all_day");
+        return `${formatMinutesAsTime(this._timeRange.startMinutes)}–${formatMinutesAsTime(this._timeRange.endMinutes)}`;
+    }
+
+    _showTimeRangeError(message) {
+        const error = this.shadowRoot?.getElementById("time-range-error");
+        if (!error) return;
+        error.textContent = message;
+        error.toggleAttribute("hidden", !message);
+    }
+
+    _applyTimeRangeToDayData(dayData) {
+        return filterDayDataByTimeRange(dayData, this._selectedDate, this._timeRange);
     }
 
     _updateMapFitButton() {
@@ -16586,7 +16977,15 @@ class TimelineCard extends HTMLElement {
         }
 
         try {
-            return renderTimeline(dayData.segments, this._hass?.locale, this._config, this._selectedSegmentIndex);
+            const fullDay = isFullDayTimeRange(this._timeRange);
+            return renderTimeline(
+                dayData.segments,
+                this._hass?.locale,
+                this._config,
+                this._selectedSegmentIndex,
+                fullDay,
+                !fullDay,
+            );
         } catch (err) {
             const message = formatErrorMessage(err);
             console.warn("Timeline card: timeline render failed", err);
@@ -16621,7 +17020,7 @@ class TimelineCard extends HTMLElement {
     }
 
     _getCurrentDayData() {
-        return this._cache.get(formatDate(this._selectedDate));
+        return this._applyTimeRangeToDayData(this._cache.get(formatDate(this._selectedDate)));
     }
 
     _getCurrentTrackDayData(dayData = this._getCurrentDayData()) {
@@ -16709,6 +17108,9 @@ class TimelineCard extends HTMLElement {
         if (!isToday(this._selectedDate)) {
             return [];
         }
+        if (!isDateInsideTimeRange(new Date(), this._selectedDate, this._timeRange)) {
+            return [];
+        }
 
         return this._config.entity
             .map(({entity: entityId}, index) => {
@@ -16763,6 +17165,12 @@ class TimelineCard extends HTMLElement {
                 this._logCacheToConsole();
             } else if (action === "open-date-picker") {
                 this._openDatePicker();
+            } else if (action === "open-time-range") {
+                this._openTimeRangeDialog();
+            } else if (action === "time-range-full-day") {
+                this._setFullDayTimeRange();
+            } else if (action === "apply-time-range") {
+                this._applyTimeRangeDialog();
             } else if (action === "select-entity") {
                 this._setActiveEntityIndex(Number(target.dataset.entityIndex));
             } else if (action === "toggle-timeline-collapse") {

@@ -17,6 +17,14 @@ import {clearPersistentCache, clearReverseGeocodingQueue} from "./reverse-geocod
 import {renderTimeline} from "./timeline.js";
 import {getConfigFormSchema} from "./config-flow.js";
 import {localize} from "./localize/localize.js";
+import {
+    FULL_DAY_TIME_RANGE,
+    filterDayDataByTimeRange,
+    formatMinutesAsTime,
+    isDateInsideTimeRange,
+    isFullDayTimeRange,
+    parseTimeToMinutes,
+} from "./time-range.js";
 
 const DEFAULT_CONFIG = {
     entity: [],
@@ -52,6 +60,7 @@ class TimelineCard extends HTMLElement {
         this._touchStart = null;
         this._activeEntityIndex = 0;
         this._selectedSegmentIndex = null;
+        this._timeRange = {...FULL_DAY_TIME_RANGE};
         this._timelineCollapsed = false;
         this._updateIntervalId = null;
         this._viewportAnimationFrame = null;
@@ -73,6 +82,7 @@ class TimelineCard extends HTMLElement {
 
         this._activeEntityIndex = 0;
         this._selectedSegmentIndex = null;
+        this._timeRange = {...FULL_DAY_TIME_RANGE};
         this._timelineCollapsed = Boolean(this._config.collapse_timeline);
         this._selectedDate = startOfDay(new Date());
         this._resetMapFitMode();
@@ -233,11 +243,12 @@ class TimelineCard extends HTMLElement {
         this._ensureBaseLayout();
 
         const dateKey = formatDate(this._selectedDate);
-        const dayData = this._cache.get(dateKey) || {
+        const rawDayData = this._cache.get(dateKey) || {
             loading: false,
             tracks: null,
             error: null,
         };
+        const dayData = this._applyTimeRangeToDayData(rawDayData);
 
         this.shadowRoot.getElementById("timeline-date").textContent = formatDate(
             this._selectedDate,
@@ -246,6 +257,7 @@ class TimelineCard extends HTMLElement {
         const datePicker = this.shadowRoot.getElementById("timeline-date-picker");
         datePicker.value = formatDate(this._selectedDate);
         datePicker.max = formatDate(new Date());
+        this._updateTimeRangeControls();
 
         this.shadowRoot
             .querySelector("[data-action='next']")
@@ -306,17 +318,41 @@ class TimelineCard extends HTMLElement {
                       <span id="timeline-date" class="date"></span>
                       <ha-icon class="date-caret" icon="mdi:menu-down"></ha-icon>
                     </button>
+                    <span id="time-range-summary" class="time-range-summary"></span>
                     <input id="timeline-date-picker" class="date-picker-input" type="date">
                   </div>
                   <div class="header-actions">
                     <ha-icon-button class="nav-button" data-action="refresh" label="${localize("card.labels.refresh")}"><ha-icon icon="mdi:refresh"></ha-icon></ha-icon-button>
                     <ha-icon-button class="nav-button" data-action="next" label="${localize("card.labels.next_day")}"><ha-icon icon="mdi:chevron-right"></ha-icon></ha-icon-button>
+                    <ha-icon-button id="time-range-button" class="nav-button time-range-button" data-action="open-time-range" label="${localize("card.labels.pick_time_range")}"><ha-icon icon="mdi:clock-time-four-outline"></ha-icon></ha-icon-button>
                   </div>
                 </div>
                 <div id="timeline-body" class="body"></div>
                 </div>
               </div>
             </div>
+            <dialog id="time-range-dialog" class="time-range-dialog">
+              <form method="dialog" class="time-range-form">
+                <div class="time-range-title">${localize("card.time_range.title")}</div>
+                <div class="time-range-fields">
+                  <label>
+                    <span>${localize("card.time_range.from")}</span>
+                    <input id="time-range-start" type="time" step="60">
+                  </label>
+                  <span class="time-range-separator">—</span>
+                  <label>
+                    <span>${localize("card.time_range.to")}</span>
+                    <input id="time-range-end" type="time" step="60">
+                  </label>
+                </div>
+                <div id="time-range-error" class="time-range-error" role="alert" hidden></div>
+                <div class="time-range-actions">
+                  <button type="button" class="time-range-all-day" data-action="time-range-full-day">${localize("card.time_range.all_day")}</button>
+                  <button type="submit" value="cancel">${localize("card.time_range.cancel")}</button>
+                  <button type="button" class="time-range-apply" data-action="apply-time-range">${localize("card.time_range.apply")}</button>
+                </div>
+              </form>
+            </dialog>
           </ha-card>
         `;
 
@@ -333,6 +369,101 @@ class TimelineCard extends HTMLElement {
         }
         input.focus();
         input.click();
+    }
+
+    _openTimeRangeDialog() {
+        const dialog = this.shadowRoot?.getElementById("time-range-dialog");
+        const startInput = this.shadowRoot?.getElementById("time-range-start");
+        const endInput = this.shadowRoot?.getElementById("time-range-end");
+        if (!dialog || !startInput || !endInput) return;
+
+        startInput.value = isFullDayTimeRange(this._timeRange)
+            ? "00:00"
+            : formatMinutesAsTime(this._timeRange.startMinutes);
+        endInput.value = isFullDayTimeRange(this._timeRange)
+            ? "23:59"
+            : formatMinutesAsTime(this._timeRange.endMinutes);
+        this._showTimeRangeError("");
+
+        if (typeof dialog.showModal === "function") {
+            if (!dialog.open) dialog.showModal();
+        } else {
+            dialog.setAttribute("open", "");
+        }
+    }
+
+    _closeTimeRangeDialog() {
+        const dialog = this.shadowRoot?.getElementById("time-range-dialog");
+        if (!dialog) return;
+        if (typeof dialog.close === "function") {
+            if (dialog.open) dialog.close();
+        } else {
+            dialog.removeAttribute("open");
+        }
+    }
+
+    _applyTimeRangeDialog() {
+        const startInput = this.shadowRoot?.getElementById("time-range-start");
+        const endInput = this.shadowRoot?.getElementById("time-range-end");
+        const startMinutes = parseTimeToMinutes(startInput?.value || "");
+        const endMinutes = parseTimeToMinutes(endInput?.value || "");
+
+        if (startMinutes === null || endMinutes === null) {
+            this._showTimeRangeError(localize("card.time_range.invalid"));
+            return;
+        }
+        if (startMinutes >= endMinutes) {
+            this._showTimeRangeError(localize("card.time_range.end_after_start"));
+            return;
+        }
+
+        this._setTimeRange({startMinutes, endMinutes});
+        this._closeTimeRangeDialog();
+    }
+
+    _setFullDayTimeRange() {
+        this._setTimeRange({...FULL_DAY_TIME_RANGE});
+        this._closeTimeRangeDialog();
+    }
+
+    _setTimeRange(range) {
+        this._timeRange = {
+            startMinutes: Number(range.startMinutes),
+            endMinutes: Number(range.endMinutes),
+        };
+        this._selectedSegmentIndex = null;
+        this._resetMapFitMode();
+        this._updateSelectedTimelineEntry(false);
+        this._updateTimeRangeControls();
+        this._render();
+    }
+
+    _updateTimeRangeControls() {
+        const summary = this.shadowRoot?.getElementById("time-range-summary");
+        const button = this.shadowRoot?.getElementById("time-range-button");
+        const label = this._timeRangeLabel();
+        if (summary) summary.textContent = label;
+        if (button) {
+            const active = !isFullDayTimeRange(this._timeRange);
+            button.classList.toggle("active", active);
+            button.setAttribute("label", `${localize("card.labels.pick_time_range")}: ${label}`);
+        }
+    }
+
+    _timeRangeLabel() {
+        if (isFullDayTimeRange(this._timeRange)) return localize("card.time_range.all_day");
+        return `${formatMinutesAsTime(this._timeRange.startMinutes)}–${formatMinutesAsTime(this._timeRange.endMinutes)}`;
+    }
+
+    _showTimeRangeError(message) {
+        const error = this.shadowRoot?.getElementById("time-range-error");
+        if (!error) return;
+        error.textContent = message;
+        error.toggleAttribute("hidden", !message);
+    }
+
+    _applyTimeRangeToDayData(dayData) {
+        return filterDayDataByTimeRange(dayData, this._selectedDate, this._timeRange);
     }
 
     _updateMapFitButton() {
@@ -476,7 +607,15 @@ class TimelineCard extends HTMLElement {
         }
 
         try {
-            return renderTimeline(dayData.segments, this._hass?.locale, this._config, this._selectedSegmentIndex);
+            const fullDay = isFullDayTimeRange(this._timeRange);
+            return renderTimeline(
+                dayData.segments,
+                this._hass?.locale,
+                this._config,
+                this._selectedSegmentIndex,
+                fullDay,
+                !fullDay,
+            );
         } catch (err) {
             const message = formatErrorMessage(err);
             console.warn("Timeline card: timeline render failed", err);
@@ -511,7 +650,7 @@ class TimelineCard extends HTMLElement {
     }
 
     _getCurrentDayData() {
-        return this._cache.get(formatDate(this._selectedDate));
+        return this._applyTimeRangeToDayData(this._cache.get(formatDate(this._selectedDate)));
     }
 
     _getCurrentTrackDayData(dayData = this._getCurrentDayData()) {
@@ -599,6 +738,9 @@ class TimelineCard extends HTMLElement {
         if (!isToday(this._selectedDate)) {
             return [];
         }
+        if (!isDateInsideTimeRange(new Date(), this._selectedDate, this._timeRange)) {
+            return [];
+        }
 
         return this._config.entity
             .map(({entity: entityId}, index) => {
@@ -653,6 +795,12 @@ class TimelineCard extends HTMLElement {
                 this._logCacheToConsole();
             } else if (action === "open-date-picker") {
                 this._openDatePicker();
+            } else if (action === "open-time-range") {
+                this._openTimeRangeDialog();
+            } else if (action === "time-range-full-day") {
+                this._setFullDayTimeRange();
+            } else if (action === "apply-time-range") {
+                this._applyTimeRangeDialog();
             } else if (action === "select-entity") {
                 this._setActiveEntityIndex(Number(target.dataset.entityIndex));
             } else if (action === "toggle-timeline-collapse") {

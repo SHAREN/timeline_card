@@ -7,17 +7,29 @@
       "pick_date": "Datum kiezen",
       "refresh": "Verversen",
       "next_day": "Volgende dag",
-      "update_interval": "Update-interval"
+      "update_interval": "Update-interval",
+      "pick_time_range": "Tijdsbereik kiezen"
     },
     "timeline": {
       "loading": "Tijdlijn laden..."
     },
-    "description": "Dagelijkse locatietijdlijn uit GPS-geschiedenis."
+    "description": "Dagelijkse locatietijdlijn uit GPS-geschiedenis.",
+    "time_range": {
+      "title": "Tijdsbereik",
+      "from": "Van",
+      "to": "Tot",
+      "all_day": "Hele dag",
+      "cancel": "Annuleren",
+      "apply": "Toepassen",
+      "invalid": "Vul een begin- en eindtijd in.",
+      "end_after_start": "De eindtijd moet later zijn dan de begintijd."
+    }
   },
   "timeline": {
     "empty": "Geen locatiegeschiedenis voor deze dag.",
     "unknown_location": "Onbekende locatie",
-    "moving": "Onderweg"
+    "moving": "Onderweg",
+    "empty_range": "Geen locatiegeschiedenis in het geselecteerde tijdsbereik."
   },
   "utils": {
     "time": {

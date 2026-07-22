@@ -1,0 +1,47 @@
+{
+  "card": {
+    "labels": {
+      "reset_map_zoom": "Сбросить масштаб карты",
+      "previous_day": "Предыдущий день",
+      "debug": "Отладка",
+      "pick_date": "Выбрать дату",
+      "refresh": "Обновить",
+      "next_day": "Следующий день",
+      "update_interval": "Интервал обновления",
+      "pick_time_range": "Выбрать временной интервал"
+    },
+    "timeline": {
+      "loading": "Загрузка истории..."
+    },
+    "time_range": {
+      "title": "Временной интервал",
+      "from": "С",
+      "to": "До",
+      "all_day": "Весь день",
+      "cancel": "Отмена",
+      "apply": "Применить",
+      "invalid": "Укажите время начала и окончания.",
+      "end_after_start": "Время окончания должно быть позже времени начала."
+    },
+    "description": "История перемещений за день по GPS-координатам."
+  },
+  "timeline": {
+    "empty": "За этот день нет истории местоположения.",
+    "empty_range": "За выбранный интервал нет данных.",
+    "unknown_location": "Неизвестное место",
+    "moving": "Движение"
+  },
+  "utils": {
+    "time": {
+      "all_day": "весь день"
+    },
+    "duration": {
+      "hour_short": "ч",
+      "minute_short": "мин"
+    },
+    "errors": {
+      "history_api_unavailable": "WebSocket API истории недоступен. Убедитесь, что интеграция Recorder/History включена.",
+      "unable_to_load_history": "Не удалось загрузить историю"
+    }
+  }
+}
