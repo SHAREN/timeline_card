@@ -747,6 +747,43 @@ function segmentTimeline(points, config, zones) {
     return segments;
 }
 
+/**
+ * Reduce high-frequency GPS jitter before stay detection and map rendering.
+ * The first and last samples are always retained. Intermediate samples are
+ * kept when the person moved far enough or when the maximum time gap elapsed.
+ */
+function simplifyHistoryPoints(points, {minDistanceM = 20, maxIntervalMs = 120000, maxPoints = 2000} = {}) {
+    if (!Array.isArray(points) || points.length <= 2) return Array.isArray(points) ? [...points] : [];
+
+    const sorted = [...points]
+        .filter((point) => point?.point?.length >= 2 && Number.isFinite(point.timestamp?.getTime?.()))
+        .sort((a, b) => a.timestamp - b.timestamp);
+    if (sorted.length <= 2) return sorted;
+
+    const simplified = [sorted[0]];
+    for (let index = 1; index < sorted.length - 1; index += 1) {
+        const candidate = sorted[index];
+        const previous = simplified[simplified.length - 1];
+        const elapsed = candidate.timestamp - previous.timestamp;
+        const distance = haversineMeters(toLatLon(previous), toLatLon(candidate));
+        if (distance >= minDistanceM || elapsed >= maxIntervalMs) {
+            simplified.push(candidate);
+        }
+    }
+
+    const last = sorted[sorted.length - 1];
+    if (simplified[simplified.length - 1] !== last) simplified.push(last);
+    if (simplified.length <= maxPoints) return simplified;
+
+    const capped = [simplified[0]];
+    const stride = (simplified.length - 1) / (maxPoints - 1);
+    for (let index = 1; index < maxPoints - 1; index += 1) {
+        capped.push(simplified[Math.round(index * stride)]);
+    }
+    capped.push(simplified[simplified.length - 1]);
+    return capped;
+}
+
 function filterSpeedOutliers(points, maxSpeed) {
     if (points.length < 3 || maxSpeed === 0) {
         return points;
@@ -779,8 +816,11 @@ function detectStays(points, config) {
     const stays = [];
     let i = 0;
     while (i < points.length - 1) {
-        const cluster = [toLatLon(points[i])];
-        let center = toLatLon(points[i]);
+        const firstPoint = toLatLon(points[i]);
+        const cluster = [firstPoint];
+        let sumLat = firstPoint.lat;
+        let sumLon = firstPoint.lon;
+        let center = firstPoint;
         let lastInIndex = i;
         let outlierUsed = false;
 
@@ -789,7 +829,9 @@ function detectStays(points, config) {
             const distance = haversineMeters(center, candidate);
             if (distance <= stayRadius) {
                 cluster.push(candidate);
-                center = meanCenter(cluster);
+                sumLat += candidate.lat;
+                sumLon += candidate.lon;
+                center = {lat: sumLat / cluster.length, lon: sumLon / cluster.length};
                 lastInIndex = j;
                 outlierUsed = false;
                 continue;
@@ -819,18 +861,6 @@ function detectStays(points, config) {
         }
     }
     return stays;
-}
-
-function meanCenter(cluster) {
-    const sum = cluster.reduce(
-        (acc, point) => {
-            acc.lat += point.lat;
-            acc.lon += point.lon;
-            return acc;
-        },
-        {lat: 0, lon: 0},
-    );
-    return {lat: sum.lat / cluster.length, lon: sum.lon / cluster.length};
 }
 
 function maxDistance(center, cluster) {
@@ -951,10 +981,10 @@ function clampHistoryToDay(states, date) {
     }
 
     if (previousState) {
-        currentDayStates.unshift({...previousState, lu: start / 1000, lc: start / 1000,});
+        currentDayStates.unshift({...previousState, lu: start / 1000, lc: start / 1000});
     }
     if (nextState) {
-        currentDayStates.push({...nextState, lu: end / 1000, lc: end / 1000,});
+        currentDayStates.push({...nextState, lu: end / 1000, lc: end / 1000});
     }
     return currentDayStates;
 }
@@ -990,20 +1020,48 @@ async function getSegmentedTracks(date, config, hass, onQueueUpdate) {
     return await Promise.all(
         entityEntries.map(async (entry) => {
             const entityId = entry.entity;
-            const rawStates = await fetchEntityHistory(hass, entityId, date);
-            const rawPoints = rawStates.map((state) => toPoint(state)).filter(Boolean).filter((p) => p.lat !== 0 || p.lon !== 0);
-            const points = filterSpeedOutliers(rawPoints, config.max_reasonable_speed_kmh);
-
             const placeEntityId = entry.places_entity || null;
-            const placeStates = placeEntityId ? await fetchEntityHistory(hass, placeEntityId, date) : [];
-
             const activityEntityId = entry.activity_entity || null;
-            const activityStates = activityEntityId ? await fetchEntityHistory(hass, activityEntityId, date) : [];
 
-            const baseSegments = segmentTimeline(points, config, zones);
-            resolveStaySegments(baseSegments, placeStates, date, config.osm_api_key, onQueueUpdate);
-            const segments = resolveActivities(baseSegments, activityStates, date, config.activity_icon_map, zones);
-            return {entityId, placeEntityId, activityEntityId, points, segments};
+            try {
+                const rawStates = await fetchEntityHistory(hass, entityId, date);
+                const rawPoints = rawStates
+                    .map((state) => toPoint(state))
+                    .filter(Boolean)
+                    .filter((point) => point.point[0] !== 0 || point.point[1] !== 0);
+                const simplifiedPoints = simplifyHistoryPoints(rawPoints);
+                const points = filterSpeedOutliers(simplifiedPoints, config.max_reasonable_speed_kmh);
+
+                const [placeStates, activityStates] = await Promise.all([
+                    placeEntityId
+                        ? fetchEntityHistory(hass, placeEntityId, date).catch((error) => {
+                              console.warn(`Timeline card: place history failed for ${entityId}`, error);
+                              return [];
+                          })
+                        : [],
+                    activityEntityId
+                        ? fetchEntityHistory(hass, activityEntityId, date).catch((error) => {
+                              console.warn(`Timeline card: activity history failed for ${entityId}`, error);
+                              return [];
+                          })
+                        : [],
+                ]);
+
+                const baseSegments = segmentTimeline(points, config, zones);
+                resolveStaySegments(baseSegments, placeStates, date, config.osm_api_key, onQueueUpdate);
+                const segments = resolveActivities(baseSegments, activityStates, date, config.activity_icon_map, zones);
+                return {entityId, placeEntityId, activityEntityId, points, segments, error: null};
+            } catch (error) {
+                console.warn(`Timeline card: history processing failed for ${entityId}`, error);
+                return {
+                    entityId,
+                    placeEntityId,
+                    activityEntityId,
+                    points: [],
+                    segments: [],
+                    error: error?.message ? String(error.message) : String(error),
+                };
+            }
         }),
     );
 }
@@ -17327,11 +17385,11 @@ class TimelineCard extends HTMLElement {
     }
 }
 
-customElements.define("location-timeline-card-2gis-v2", TimelineCard);
+customElements.define("location-timeline-card-2gis-v3", TimelineCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "location-timeline-card-2gis-v2",
-    name: "Location Timeline Card — 2GIS patch v2",
+    type: "location-timeline-card-2gis-v3",
+    name: "Location Timeline Card — multi-provider patch v3",
     description: localize("card.description"),
 });

@@ -957,11 +957,11 @@ class TimelineCard extends HTMLElement {
     }
 }
 
-customElements.define("location-timeline-card-2gis-v2", TimelineCard);
+customElements.define("location-timeline-card-2gis-v3", TimelineCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "location-timeline-card-2gis-v2",
-    name: "Location Timeline Card — 2GIS patch v2",
+    type: "location-timeline-card-2gis-v3",
+    name: "Location Timeline Card — multi-provider patch v3",
     description: localize("card.description"),
 });
