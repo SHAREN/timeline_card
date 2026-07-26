@@ -15,6 +15,7 @@ import {
 import {TimelineLeafletMap} from "./leaflet-map.js";
 import {clearPersistentCache, clearReverseGeocodingQueue} from "./reverse-geocoding.js";
 import {renderTimeline} from "./timeline.js";
+import {pickAvailableTrackIndex} from "./track-selection.js";
 import {getConfigFormSchema} from "./config-flow.js";
 import {localize} from "./localize/localize.js";
 import {
@@ -661,8 +662,11 @@ class TimelineCard extends HTMLElement {
 
     _getCurrentTrackDayData(dayData = this._getCurrentDayData()) {
         const tracks = Array.isArray(dayData?.tracks) ? dayData.tracks : [];
-        const index = Math.min(this._activeEntityIndex, Math.max(0, tracks.length - 1));
-        this._activeEntityIndex = index;
+        const index = pickAvailableTrackIndex(tracks, this._activeEntityIndex);
+        if (index !== this._activeEntityIndex) {
+            this._activeEntityIndex = index;
+            this._renderEntitySelector(true);
+        }
         return (
             tracks[index] || {
                 segments: [],
@@ -957,11 +961,11 @@ class TimelineCard extends HTMLElement {
     }
 }
 
-customElements.define("location-timeline-card-2gis-v3", TimelineCard);
+customElements.define("location-timeline-card-2gis-v4", TimelineCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "location-timeline-card-2gis-v3",
-    name: "Location Timeline Card — multi-provider patch v3",
+    type: "location-timeline-card-2gis-v4",
+    name: "Location Timeline Card — history fallback patch v4",
     description: localize("card.description"),
 });

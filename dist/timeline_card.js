@@ -16124,6 +16124,25 @@ function renderSegment(segment, index, options) {
     return "";
 }
 
+function trackHasVisibleHistory(track) {
+    return !track?.error && Array.isArray(track?.segments) && track.segments.length > 0;
+}
+
+function pickAvailableTrackIndex(tracks, preferredIndex = 0) {
+    if (!Array.isArray(tracks) || tracks.length === 0) return 0;
+
+    const normalizedPreferred = Number.isInteger(preferredIndex)
+        ? Math.min(Math.max(0, preferredIndex), tracks.length - 1)
+        : 0;
+
+    if (trackHasVisibleHistory(tracks[normalizedPreferred])) {
+        return normalizedPreferred;
+    }
+
+    const availableIndex = tracks.findIndex((track) => trackHasVisibleHistory(track));
+    return availableIndex >= 0 ? availableIndex : normalizedPreferred;
+}
+
 function getConfigFormSchema() {
     return {
         schema: [
@@ -17089,8 +17108,11 @@ class TimelineCard extends HTMLElement {
 
     _getCurrentTrackDayData(dayData = this._getCurrentDayData()) {
         const tracks = Array.isArray(dayData?.tracks) ? dayData.tracks : [];
-        const index = Math.min(this._activeEntityIndex, Math.max(0, tracks.length - 1));
-        this._activeEntityIndex = index;
+        const index = pickAvailableTrackIndex(tracks, this._activeEntityIndex);
+        if (index !== this._activeEntityIndex) {
+            this._activeEntityIndex = index;
+            this._renderEntitySelector(true);
+        }
         return (
             tracks[index] || {
                 segments: [],
@@ -17385,11 +17407,11 @@ class TimelineCard extends HTMLElement {
     }
 }
 
-customElements.define("location-timeline-card-2gis-v3", TimelineCard);
+customElements.define("location-timeline-card-2gis-v4", TimelineCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "location-timeline-card-2gis-v3",
-    name: "Location Timeline Card — multi-provider patch v3",
+    type: "location-timeline-card-2gis-v4",
+    name: "Location Timeline Card — history fallback patch v4",
     description: localize("card.description"),
 });
