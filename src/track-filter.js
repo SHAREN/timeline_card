@@ -5,7 +5,7 @@ export const DEFAULT_TRACK_FILTER_OPTIONS = Object.freeze({
     minJumpDistanceM: 120,
     returnRadiusM: 80,
     returnWindowMs: 180000,
-    maxExcursionSpeedKmh: 35,
+    maxExcursionSpeedKmh: 80,
     maxSegmentSpeedKmh: 120,
     maxAccuracyM: 0,
     maxPasses: 4,
@@ -127,6 +127,7 @@ function findShortExcursionReturn(points, anchorIndex, options) {
     const anchor = points[anchorIndex];
     let maxDistance = 0;
     let pathDistance = 0;
+    let fastestSegment = 0;
     let previous = anchor;
 
     for (let index = anchorIndex + 1; index < points.length; index += 1) {
@@ -134,6 +135,7 @@ function findShortExcursionReturn(points, anchorIndex, options) {
         if (!(elapsed > 0) || elapsed > options.returnWindowMs) break;
 
         pathDistance += haversineDistanceM(previous, points[index]);
+        fastestSegment = Math.max(fastestSegment, speedKmh(previous, points[index]));
         previous = points[index];
         const distanceFromAnchor = haversineDistanceM(anchor, points[index]);
         maxDistance = Math.max(maxDistance, distanceFromAnchor);
@@ -142,7 +144,9 @@ function findShortExcursionReturn(points, anchorIndex, options) {
         if (maxDistance < options.minJumpDistanceM) continue;
 
         const excursionSpeed = (pathDistance / elapsed) * 3600;
-        if (excursionSpeed >= options.maxExcursionSpeedKmh) return index;
+        if (excursionSpeed >= options.maxExcursionSpeedKmh || fastestSegment >= options.maxSegmentSpeedKmh) {
+            return index;
+        }
     }
     return null;
 }
