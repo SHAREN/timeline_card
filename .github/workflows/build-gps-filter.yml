@@ -1,0 +1,51 @@
+name: Build GPS teleport filter
+
+on:
+  push:
+    branches:
+      - feature/2gis-timeline-controls
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/2gis-timeline-controls
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Wire filter into card
+        run: python3 scripts/apply-gps-filter.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build card bundle
+        run: npm run build
+
+      - name: Commit generated source and bundle
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/card.js src/segmentation.js src/utils.js src/track-filter.js tests/track-filter.test.mjs package.json package-lock.json dist/timeline_card.js scripts/apply-gps-filter.py
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git commit -m "Integrate and build GPS teleport filter"
+          git push origin HEAD:feature/2gis-timeline-controls
