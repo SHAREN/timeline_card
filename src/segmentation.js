@@ -1,6 +1,7 @@
 import {endOfDay, haversineMeters, startOfDay, toLatLon, toPoint} from "./utils.js";
 import {resolveStaySegments} from "./reverse-geocoding.js";
 import {resolveActivities} from "./activity.js";
+import {filterTrackOutliers} from "./track-filter.js";
 
 export function segmentTimeline(points, config, zones) {
     if (!Array.isArray(points) || points.length === 0) return [];
@@ -310,7 +311,16 @@ export async function getSegmentedTracks(date, config, hass, onQueueUpdate) {
                     .map((state) => toPoint(state))
                     .filter(Boolean)
                     .filter((point) => point.point[0] !== 0 || point.point[1] !== 0);
-                const simplifiedPoints = simplifyHistoryPoints(rawPoints);
+                const cleanedPoints = filterTrackOutliers(rawPoints, {
+                    enabled: config.filter_gps_outliers !== false,
+                    minJumpDistanceM: Number(config.teleport_min_jump_m) || 120,
+                    returnRadiusM: Number(config.teleport_return_radius_m) || 80,
+                    returnWindowMs: (Number(config.teleport_return_window_s) || 180) * 1000,
+                    maxExcursionSpeedKmh: Number(config.teleport_max_excursion_speed_kmh) || 35,
+                    maxSegmentSpeedKmh: Number(config.teleport_max_segment_speed_kmh) || 120,
+                    maxAccuracyM: Number(config.max_gps_accuracy_m) || 0,
+                });
+                const simplifiedPoints = simplifyHistoryPoints(cleanedPoints);
                 const points = filterSpeedOutliers(simplifiedPoints, config.max_reasonable_speed_kmh);
 
                 const [placeStates, activityStates] = await Promise.all([
